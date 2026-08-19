@@ -26,7 +26,11 @@ export function Pagination({
 
   function hrefFor(target: number) {
     const sp = new URLSearchParams(params.toString());
-    target === 1 ? sp.delete("page") : sp.set("page", String(target));
+    if (target === 1) {
+      sp.delete("page");
+    } else {
+      sp.set("page", String(target));
+    }
     const qs = sp.toString();
     return qs ? `${pathname}?${qs}` : pathname;
   }

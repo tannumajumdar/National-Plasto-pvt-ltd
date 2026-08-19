@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { useCart } from "@/hooks/use-cart";
+import { useSession } from "@/hooks/use-session";
 import { useWishlist } from "@/hooks/use-wishlist";
 
 /**
@@ -13,7 +14,10 @@ import { useWishlist } from "@/hooks/use-wishlist";
  * with whatever it already had (taking the larger quantity per product) and
  * returns the authoritative list, which replaces the local store.
  */
-export function CartSync({ signedIn }: { signedIn: boolean }) {
+export function CartSync() {
+  const { user, loading } = useSession();
+  const signedIn = Boolean(user);
+
   const cartReady = useCart((s) => s.ready);
   const synced = useCart((s) => s.synced);
   const lines = useCart((s) => s.lines);
@@ -30,7 +34,7 @@ export function CartSync({ signedIn }: { signedIn: boolean }) {
   }, [signedIn, markSynced]);
 
   React.useEffect(() => {
-    if (!signedIn || !cartReady || !wishlistReady || synced) return;
+    if (loading || !signedIn || !cartReady || !wishlistReady || synced) return;
 
     let cancelled = false;
     markSynced(true); // optimistic: prevents a double run in StrictMode
@@ -72,7 +76,7 @@ export function CartSync({ signedIn }: { signedIn: boolean }) {
     // Intentionally not depending on `lines`/`wishlistIds`: this runs once
     // per sign-in, not on every cart mutation.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [signedIn, cartReady, wishlistReady, synced]);
+  }, [signedIn, loading, cartReady, wishlistReady, synced]);
 
   return null;
 }

@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Heart, LogOut, MapPin, Package, User } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { AccountNav } from "@/components/account/account-nav";

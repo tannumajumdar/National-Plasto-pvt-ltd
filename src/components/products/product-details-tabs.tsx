@@ -4,6 +4,7 @@ import { Check, Info, MessageSquare } from "lucide-react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RatingStars } from "@/components/products/rating-stars";
+import { ReviewForm } from "@/components/products/review-form";
 import { formatDate } from "@/lib/utils";
 import type { ProductDetailDTO, ReviewDTO } from "@/types";
 
@@ -92,6 +93,7 @@ export function ProductDetailsTabs({
 
       {/* Reviews */}
       <TabsContent value="reviews">
+        <div className="max-w-3xl">
         {reviews.length === 0 ? (
           <div className="flex max-w-3xl flex-col items-start gap-3 rounded-2xl border border-dashed border-border p-8">
             <MessageSquare className="size-6 text-muted-foreground" />
@@ -138,6 +140,9 @@ export function ProductDetailsTabs({
             </ul>
           </div>
         )}
+
+        <ReviewForm productId={product.id} productSlug={product.slug} />
+        </div>
       </TabsContent>
     </Tabs>
   );

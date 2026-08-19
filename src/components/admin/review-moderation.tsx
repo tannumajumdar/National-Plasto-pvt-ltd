@@ -47,7 +47,11 @@ export function ReviewModeration({ reviews }: { reviews: AdminReview[] }) {
     setBusyId(id);
     try {
       const result = await moderateReview({ id, action });
-      result.ok ? toast.success(result.message) : toast.error(result.message);
+      if (result.ok) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
       router.refresh();
     } catch {
       toast.error("Could not update the review.");

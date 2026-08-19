@@ -36,7 +36,11 @@ export function MessageInbox({ messages }: { messages: AdminMessage[] }) {
     setBusyId(message.id);
     try {
       const result = await markMessageRead(message.id, !message.isRead);
-      result.ok ? toast.success(result.message) : toast.error(result.message);
+      if (result.ok) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
       router.refresh();
     } finally {
       setBusyId(null);
@@ -47,7 +51,11 @@ export function MessageInbox({ messages }: { messages: AdminMessage[] }) {
     setBusyId(id);
     try {
       const result = await deleteMessage(id);
-      result.ok ? toast.success(result.message) : toast.error(result.message);
+      if (result.ok) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
       router.refresh();
     } finally {
       setBusyId(null);

@@ -31,7 +31,11 @@ export function OrderFilters({
       return;
     }
     const sp = new URLSearchParams(params.toString());
-    debounced.trim() ? sp.set("q", debounced.trim()) : sp.delete("q");
+    if (debounced.trim()) {
+      sp.set("q", debounced.trim());
+    } else {
+      sp.delete("q");
+    }
     sp.delete("page");
     startTransition(() => router.replace(`${pathname}?${sp.toString()}`, { scroll: false }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -41,7 +45,11 @@ export function OrderFilters({
 
   function setStatus(status: string) {
     const sp = new URLSearchParams(params.toString());
-    status ? sp.set("status", status) : sp.delete("status");
+    if (status) {
+      sp.set("status", status);
+    } else {
+      sp.delete("status");
+    }
     sp.delete("page");
     startTransition(() => router.replace(`${pathname}?${sp.toString()}`, { scroll: false }));
   }

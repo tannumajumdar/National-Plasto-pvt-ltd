@@ -6,7 +6,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
-  Check,
   ExternalLink,
   Loader2,
   MoreHorizontal,
@@ -110,7 +109,11 @@ export function ProductsTable({
       return;
     }
     const sp = new URLSearchParams(params.toString());
-    debounced.trim() ? sp.set("q", debounced.trim()) : sp.delete("q");
+    if (debounced.trim()) {
+      sp.set("q", debounced.trim());
+    } else {
+      sp.delete("q");
+    }
     sp.delete("page");
     startTransition(() => router.replace(`${pathname}?${sp.toString()}`, { scroll: false }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -121,7 +124,11 @@ export function ProductsTable({
 
   function setParam(key: string, value: string) {
     const sp = new URLSearchParams(params.toString());
-    value && value !== "all" ? sp.set(key, value) : sp.delete(key);
+    if (value && value !== "all") {
+      sp.set(key, value);
+    } else {
+      sp.delete(key);
+    }
     sp.delete("page");
     startTransition(() => router.replace(`${pathname}?${sp.toString()}`, { scroll: false }));
   }
@@ -135,7 +142,11 @@ export function ProductsTable({
   function toggleOne(id: string) {
     setSelected((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   }
@@ -144,7 +155,11 @@ export function ProductsTable({
     setBusy(true);
     try {
       const result = await bulkUpdateProducts({ ids: [...selected], action });
-      result.ok ? toast.success(result.message) : toast.error(result.message);
+      if (result.ok) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
       setSelected(new Set());
       setBulkConfirm(false);
       router.refresh();
@@ -160,7 +175,11 @@ export function ProductsTable({
     setBusy(true);
     try {
       const result = await deleteProduct(pendingDelete.id);
-      result.ok ? toast.success(result.message) : toast.error(result.message);
+      if (result.ok) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
       setPendingDelete(null);
       router.refresh();
     } catch {

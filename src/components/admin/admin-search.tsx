@@ -33,7 +33,11 @@ export function AdminSearch({
       return;
     }
     const sp = new URLSearchParams(params.toString());
-    debounced.trim() ? sp.set(paramKey, debounced.trim()) : sp.delete(paramKey);
+    if (debounced.trim()) {
+      sp.set(paramKey, debounced.trim());
+    } else {
+      sp.delete(paramKey);
+    }
     sp.delete("page");
     startTransition(() => router.replace(`${pathname}?${sp.toString()}`, { scroll: false }));
     // eslint-disable-next-line react-hooks/exhaustive-deps

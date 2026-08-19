@@ -31,17 +31,14 @@ import { EASE } from "@/components/animations/motion-primitives";
 import { useCartCount } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useScrolled } from "@/hooks/use-scroll-position";
+import { useSession, type SessionUser } from "@/hooks/use-session";
 import { COLLECTION_LIST, MAIN_NAV } from "@/lib/constants";
 import { cn, initials } from "@/lib/utils";
 
-export interface HeaderUser {
-  id: string;
-  name: string;
-  email: string;
-  role: "USER" | "ADMIN";
-}
+export type HeaderUser = SessionUser;
 
-export function Header({ user }: { user: HeaderUser | null }) {
+export function Header() {
+  const { user } = useSession();
   const pathname = usePathname();
   const scrolled = useScrolled(10);
   const [searchOpen, setSearchOpen] = React.useState(false);
@@ -262,7 +259,7 @@ function MobileMenu({
 }: {
   open: boolean;
   onClose: () => void;
-  user: HeaderUser | null;
+  user: SessionUser | null;
 }) {
   return (
     <AnimatePresence>

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Star } from "lucide-react";
 
 import { AdminMenuButton } from "@/components/admin/admin-sidebar";

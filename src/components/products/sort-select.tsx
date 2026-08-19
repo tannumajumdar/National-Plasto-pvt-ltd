@@ -19,7 +19,11 @@ export function SortSelect() {
 
   function onChange(value: string) {
     const sp = new URLSearchParams(params.toString());
-    value === "featured" ? sp.delete("sort") : sp.set("sort", value);
+    if (value === "featured") {
+      sp.delete("sort");
+    } else {
+      sp.set("sort", value);
+    }
     sp.delete("page");
     const qs = sp.toString();
     router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });

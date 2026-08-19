@@ -21,7 +21,11 @@ export function CustomerStatusToggle({
     setBusy(true);
     try {
       const result = await setCustomerActive({ id, isActive: !isActive });
-      result.ok ? toast.success(result.message) : toast.error(result.message);
+      if (result.ok) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
       router.refresh();
     } catch {
       toast.error("Could not update the account.");

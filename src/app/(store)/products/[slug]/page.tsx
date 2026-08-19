@@ -177,6 +177,8 @@ export default async function ProductPage({
         </div>
 
         <div className="mt-16 lg:mt-24">
+          {/* Review eligibility is resolved client-side so this page stays
+              statically cached for SEO rather than becoming per-request. */}
           <ProductDetailsTabs product={product} reviews={reviews} />
         </div>
       </div>

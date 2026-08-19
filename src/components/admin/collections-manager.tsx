@@ -79,7 +79,11 @@ export function CollectionsManager({ collections }: { collections: AdminCollecti
   async function toggleActive(collection: AdminCollection) {
     try {
       const result = await toggleCollectionActive(collection.id, !collection.isActive);
-      result.ok ? toast.success(result.message) : toast.error(result.message);
+      if (result.ok) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
       router.refresh();
     } catch {
       toast.error("Could not update the collection.");

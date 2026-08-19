@@ -7,7 +7,6 @@ import {
   AlertCircle,
   ArrowRight,
   Heart,
-  Loader2,
   Minus,
   Plus,
   ShoppingBag,
@@ -24,12 +23,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ProductVisual } from "@/components/products/product-visual";
 import { EASE } from "@/components/animations/motion-primitives";
 import { useCart } from "@/hooks/use-cart";
+import { useSession } from "@/hooks/use-session";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
 import { cn, formatINR } from "@/lib/utils";
 import type { CartLineDTO, CartTotals } from "@/types";
 
-export function CartView({ signedIn }: { signedIn: boolean }) {
+export function CartView() {
+  const { user } = useSession();
+  const signedIn = Boolean(user);
+
   const ready = useCart((s) => s.ready);
   const lines = useCart((s) => s.lines);
   const setQuantity = useCart((s) => s.setQuantity);

@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { EASE } from "@/components/animations/motion-primitives";
 import { cn, formatINR } from "@/lib/utils";
 import type { CategoryDTO, CollectionDTO } from "@/types";
 
@@ -128,8 +127,16 @@ function FilterPanel({
   const toggleMulti = (key: string, value: string) =>
     update((sp) => {
       const current = new Set(sp.get(key)?.split(",").filter(Boolean) ?? []);
-      current.has(value) ? current.delete(value) : current.add(value);
-      current.size ? sp.set(key, [...current].join(",")) : sp.delete(key);
+      if (current.has(value)) {
+        current.delete(value);
+      } else {
+        current.add(value);
+      }
+      if (current.size) {
+        sp.set(key, [...current].join(","));
+      } else {
+        sp.delete(key);
+      }
     });
 
   const toggleFlag = (key: string) =>
@@ -211,8 +218,16 @@ function FilterPanel({
               onValueChange={(v) => setRange([v[0], v[1]] as [number, number])}
               onValueCommit={(v) =>
                 update((sp) => {
-                  v[0] > min ? sp.set("minPrice", String(v[0])) : sp.delete("minPrice");
-                  v[1] < max ? sp.set("maxPrice", String(v[1])) : sp.delete("maxPrice");
+                  if (v[0] > min) {
+                    sp.set("minPrice", String(v[0]));
+                  } else {
+                    sp.delete("minPrice");
+                  }
+                  if (v[1] < max) {
+                    sp.set("maxPrice", String(v[1]));
+                  } else {
+                    sp.delete("maxPrice");
+                  }
                 })
               }
               className="mt-3"

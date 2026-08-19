@@ -16,8 +16,15 @@ import { cn } from "@/lib/utils";
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  const collections = await getCollections();
-  return collections.map((c) => ({ slug: c.slug }));
+  // Prerender each collection when the database is reachable. If it is not
+  // (a CI build without a DB, for example), fall back to rendering these
+  // routes on demand rather than failing the whole build.
+  try {
+    const collections = await getCollections();
+    return collections.map((c) => ({ slug: c.slug }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({
