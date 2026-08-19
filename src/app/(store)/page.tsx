@@ -20,9 +20,9 @@ import {
   getBestSellers,
   getFeaturedProducts,
   getNewArrivals,
+  getPublishedProductCount,
   getShowcaseProducts,
 } from "@/lib/queries/products";
-import prisma from "@/lib/db/prisma";
 import type { ProductCardDTO } from "@/types";
 
 export const metadata: Metadata = {
@@ -58,7 +58,7 @@ export default async function HomePage() {
     getNewArrivals(10),
     getBestSellers(10),
     getShowcaseProducts(12),
-    prisma.product.count({ where: { isPublished: true } }),
+    getPublishedProductCount(),
   ]);
 
   // On a freshly seeded catalogue nothing is flagged yet. Rather than render

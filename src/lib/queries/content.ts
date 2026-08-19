@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import prisma from "@/lib/db/prisma";
+import { safeRead } from "@/lib/db/safe";
 import type {
   AboutContent,
   ContactContent,
@@ -121,7 +122,8 @@ export const getJourney = cache(() => getSetting("journey"));
  * database so those counters are always accurate; the rest show whatever an
  * admin has entered. Stats with no real figure stay hidden.
  */
-export const getStats = cache(async (): Promise<StatDTO[]> => {
+export const getStats = cache(async (): Promise<StatDTO[]> =>
+  safeRead(async () => {
   const [rows, productCount, collectionCount] = await Promise.all([
     prisma.stat.findMany({ where: { isPublished: true }, orderBy: { sortOrder: "asc" } }),
     prisma.product.count({ where: { isPublished: true } }),
@@ -144,9 +146,11 @@ export const getStats = cache(async (): Promise<StatDTO[]> => {
       isPublished: s.isPublished,
     }))
     .filter((s) => s.value.trim() !== "");
-});
+  }, []),
+);
 
-export const getActiveBanners = cache(async (placement = "home") => {
+export const getActiveBanners = cache(async (placement = "home") =>
+  safeRead(async () => {
   const rows = await prisma.banner.findMany({
     where: { isActive: true, placement },
     orderBy: { sortOrder: "asc" },
@@ -159,4 +163,5 @@ export const getActiveBanners = cache(async (placement = "home") => {
     link: b.link,
     ctaLabel: b.ctaLabel,
   }));
-});
+  }, []),
+);

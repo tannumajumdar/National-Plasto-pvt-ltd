@@ -5,6 +5,7 @@ import { cache } from "react";
 
 import prisma from "@/lib/db/prisma";
 import { PRODUCTS_PER_PAGE } from "@/lib/constants";
+import { safeRead } from "@/lib/db/safe";
 import type { AccentToken } from "@/lib/placeholder";
 import type {
   Paginated,
@@ -157,6 +158,7 @@ export async function getProducts(
   const pageSize = PRODUCTS_PER_PAGE;
   const where = buildWhere(filters);
 
+  return safeRead(async () => {
   const [rows, total] = await Promise.all([
     prisma.product.findMany({
       where,
@@ -175,10 +177,12 @@ export async function getProducts(
     pageSize,
     totalPages: Math.max(1, Math.ceil(total / pageSize)),
   };
+  }, { items: [], total: 0, page, pageSize, totalPages: 1 });
 }
 
 export const getProductBySlug = cache(
-  async (slug: string): Promise<ProductDetailDTO | null> => {
+  async (slug: string): Promise<ProductDetailDTO | null> =>
+    safeRead(async () => {
     const p = await prisma.product.findUnique({
       where: { slug },
       select: {
@@ -209,7 +213,7 @@ export const getProductBySlug = cache(
       metaDescription: p.metaDescription,
       createdAt: p.createdAt.toISOString(),
     };
-  },
+    }, null),
 );
 
 export async function getRelatedProducts(
@@ -217,6 +221,7 @@ export async function getRelatedProducts(
   collectionSlug: string,
   take = 8,
 ): Promise<ProductCardDTO[]> {
+  return safeRead(async () => {
   const rows = await prisma.product.findMany({
     where: {
       isPublished: true,
@@ -227,38 +232,45 @@ export async function getRelatedProducts(
     orderBy: [{ isFeatured: "desc" }, { name: "asc" }],
     take,
   });
-  return rows.map(mapProductCard);
+    return rows.map(mapProductCard);
+  }, []);
 }
 
 /** Homepage rails. One round trip each, run in parallel by the caller. */
 export async function getFeaturedProducts(take = 8): Promise<ProductCardDTO[]> {
+  return safeRead(async () => {
   const rows = await prisma.product.findMany({
     where: { isPublished: true, isFeatured: true },
     select: cardSelect,
     orderBy: [{ updatedAt: "desc" }],
     take,
   });
-  return rows.map(mapProductCard);
+    return rows.map(mapProductCard);
+  }, []);
 }
 
 export async function getNewArrivals(take = 8): Promise<ProductCardDTO[]> {
+  return safeRead(async () => {
   const rows = await prisma.product.findMany({
     where: { isPublished: true, isNew: true },
     select: cardSelect,
     orderBy: [{ createdAt: "desc" }],
     take,
   });
-  return rows.map(mapProductCard);
+    return rows.map(mapProductCard);
+  }, []);
 }
 
 export async function getBestSellers(take = 8): Promise<ProductCardDTO[]> {
+  return safeRead(async () => {
   const rows = await prisma.product.findMany({
     where: { isPublished: true, isBestSeller: true },
     select: cardSelect,
     orderBy: [{ ratingAvg: "desc" }, { name: "asc" }],
     take,
   });
-  return rows.map(mapProductCard);
+    return rows.map(mapProductCard);
+  }, []);
 }
 
 /**
@@ -267,16 +279,19 @@ export async function getBestSellers(take = 8): Promise<ProductCardDTO[]> {
  * homepage never renders an empty rail.
  */
 export async function getShowcaseProducts(take = 8): Promise<ProductCardDTO[]> {
+  return safeRead(async () => {
   const rows = await prisma.product.findMany({
     where: { isPublished: true },
     select: cardSelect,
     orderBy: [{ collection: { sortOrder: "asc" } }, { name: "asc" }],
     take,
   });
-  return rows.map(mapProductCard);
+    return rows.map(mapProductCard);
+  }, []);
 }
 
 export async function searchProducts(q: string, take = 8): Promise<ProductCardDTO[]> {
+  return safeRead(async () => {
   const term = q.trim();
   if (term.length < 2) return [];
 
@@ -294,10 +309,12 @@ export async function searchProducts(q: string, take = 8): Promise<ProductCardDT
     orderBy: [{ isFeatured: "desc" }, { name: "asc" }],
     take,
   });
-  return rows.map(mapProductCard);
+    return rows.map(mapProductCard);
+  }, []);
 }
 
 export async function getProductReviews(productId: string): Promise<ReviewDTO[]> {
+  return safeRead(async () => {
   const rows = await prisma.review.findMany({
     where: { productId, isApproved: true },
     orderBy: { createdAt: "desc" },
@@ -319,22 +336,34 @@ export async function getProductReviews(productId: string): Promise<ReviewDTO[]>
     createdAt: r.createdAt.toISOString(),
     author: { name: r.user.name },
   }));
+  }, []);
 }
 
 /** Price bounds across priced products, used to configure the range filter. */
-export const getPriceBounds = cache(async (): Promise<{ min: number; max: number }> => {
+export const getPriceBounds = cache(async (): Promise<{ min: number; max: number }> =>
+  safeRead(async () => {
   const agg = await prisma.product.aggregate({
     where: { isPublished: true, hasPrice: true },
     _min: { sortPrice: true },
     _max: { sortPrice: true },
   });
   return { min: agg._min.sortPrice ?? 0, max: agg._max.sortPrice ?? 0 };
-});
+  }, { min: 0, max: 0 }),
+);
 
 export async function getAllProductSlugs(): Promise<{ slug: string; updatedAt: Date }[]> {
-  return prisma.product.findMany({
+  return safeRead(
+    () =>
+      prisma.product.findMany({
     where: { isPublished: true },
     select: { slug: true, updatedAt: true },
-    orderBy: { name: "asc" },
-  });
+        orderBy: { name: "asc" },
+      }),
+    [],
+  );
+}
+
+/** Published product count. Returns 0 when the database is unavailable. */
+export async function getPublishedProductCount(): Promise<number> {
+  return safeRead(() => prisma.product.count({ where: { isPublished: true } }), 0);
 }

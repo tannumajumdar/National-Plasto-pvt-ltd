@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import prisma from "@/lib/db/prisma";
+import { safeRead } from "@/lib/db/safe";
 import {
   SESSION_COOKIE,
   SESSION_MAX_AGE,
@@ -32,7 +33,11 @@ export const getCurrentUser = cache(async () => {
   const session = await getSession();
   if (!session) return null;
 
-  const user = await prisma.user.findUnique({
+  // If the database is unreachable we treat the visitor as signed out
+  // rather than letting every page crash.
+  const user = await safeRead(
+    () =>
+      prisma.user.findUnique({
     where: { id: session.sub },
     select: {
       id: true,
@@ -43,7 +48,9 @@ export const getCurrentUser = cache(async () => {
       isActive: true,
       createdAt: true,
     },
-  });
+      }),
+    null,
+  );
 
   if (!user || !user.isActive) return null;
   return user;
