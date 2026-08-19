@@ -1,0 +1,462 @@
+// National Plasto Pvt. Ltd. — data model
+// Money is stored as INTEGER PAISE (₹1 = 100) so totals are always exact
+// and serialise cleanly across the server/client boundary.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------------
+// Auth & people
+// ------------------------------------------------------------------
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  phone        String?
+  passwordHash String
+  role         Role     @default(USER)
+  isActive     Boolean  @default(true)
+  emailVerified Boolean @default(false)
+
+  resetToken       String?   @unique
+  resetTokenExpiry DateTime?
+
+  addresses Address[]
+  orders    Order[]
+  cart      Cart?
+  wishlist  Wishlist?
+  reviews   Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
+  @@map("users")
+}
+
+model Address {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label     String  @default("Home")
+  fullName  String
+  phone     String
+  line1     String  @db.Text
+  line2     String? @db.Text
+  city      String
+  state     String
+  pincode   String
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+// ------------------------------------------------------------------
+// Catalogue
+// ------------------------------------------------------------------
+
+/// A brand-level collection: NEXT, NATIONAL, NATIONAL SAPPHIRE
+model Collection {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  slug        String  @unique
+  tagline     String?
+  description String? @db.Text
+  bannerImage String?
+  /// Signature theme token used by the UI: "next" | "national" | "sapphire"
+  accent      String  @default("national")
+  isActive    Boolean @default(true)
+  sortOrder   Int     @default(0)
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("collections")
+}
+
+model Category {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  slug        String  @unique
+  description String? @db.Text
+  image       String?
+  isActive    Boolean @default(true)
+  sortOrder   Int     @default(0)
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("categories")
+}
+
+model Product {
+  id               String  @id @default(cuid())
+  name             String
+  slug             String  @unique
+  sku              String  @unique
+  description      String? @db.Text
+  shortDescription String? @db.Text
+
+  /// Paise. Null = price not yet set by admin (PDF supplied no prices).
+  price         Int?
+  /// Paise. Optional promotional price; must be < price when set.
+  discountPrice Int?
+
+  stock       Int     @default(0)
+  trackStock  Boolean @default(true)
+
+  /// Denormalised sort keys, maintained whenever pricing changes.
+  /// MySQL cannot express NULLS LAST, and sorting must use the effective
+  /// (post-discount) price, so both are precomputed on write.
+  hasPrice    Boolean @default(false)
+  sortPrice   Int     @default(0)
+
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id])
+  categoryId   String?
+  category     Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  images         ProductImage[]
+  features       ProductFeature[]
+  specifications ProductSpec[]
+  reviews        Review[]
+
+  isFeatured   Boolean @default(false)
+  isNew        Boolean @default(false)
+  isBestSeller Boolean @default(false)
+  isPublished  Boolean @default(true)
+
+  /// Cached aggregates, recomputed when a review is written.
+  ratingAvg   Float @default(0)
+  reviewCount Int   @default(0)
+
+  /// True until an admin has supplied price + imagery + description.
+  needsReview Boolean @default(true)
+
+  metaTitle       String?
+  metaDescription String? @db.Text
+
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+  orderItems    OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([collectionId])
+  @@index([categoryId])
+  @@index([isFeatured])
+  @@index([isNew])
+  @@index([isBestSeller])
+  @@index([isPublished])
+  @@index([name])
+  @@index([hasPrice, sortPrice])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String  @db.Text
+  alt       String?
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+model ProductFeature {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  label     String  @db.Text
+  sortOrder Int     @default(0)
+
+  @@index([productId])
+  @@map("product_features")
+}
+
+model ProductSpec {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String
+  value     String  @db.Text
+  sortOrder Int     @default(0)
+
+  @@index([productId])
+  @@map("product_specs")
+}
+
+model Review {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  rating    Int
+  title     String?
+  body      String? @db.Text
+  isApproved Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, userId])
+  @@index([productId])
+  @@index([isApproved])
+  @@map("reviews")
+}
+
+// ------------------------------------------------------------------
+// Cart & wishlist
+// ------------------------------------------------------------------
+
+model Cart {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  items CartItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String  @id @default(cuid())
+  cartId    String
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int     @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId])
+  @@index([productId])
+  @@map("cart_items")
+}
+
+model Wishlist {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  items WishlistItem[]
+
+  createdAt DateTime @default(now())
+
+  @@map("wishlists")
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  wishlistId String
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([wishlistId, productId])
+  @@index([productId])
+  @@map("wishlist_items")
+}
+
+// ------------------------------------------------------------------
+// Orders
+// ------------------------------------------------------------------
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  COD
+  RAZORPAY
+}
+
+model Order {
+  id          String @id @default(cuid())
+  orderNumber String @unique
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Snapshot of the customer at time of order
+  customerName  String
+  customerEmail String
+  customerPhone String
+
+  shipLine1   String @db.Text
+  shipLine2   String? @db.Text
+  shipCity    String
+  shipState   String
+  shipPincode String
+
+  // All paise
+  subtotal Int
+  discount Int @default(0)
+  shipping Int @default(0)
+  total    Int
+
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(UNPAID)
+  paymentMethod PaymentMethod @default(COD)
+
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+
+  notes String? @db.Text
+
+  items  OrderItem[]
+  events OrderEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  // Snapshot so history survives catalogue edits
+  name           String
+  slug           String
+  collectionName String
+  image          String?
+  unitPrice      Int
+  quantity       Int
+  lineTotal      Int
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model OrderEvent {
+  id      String      @id @default(cuid())
+  orderId String
+  order   Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status  OrderStatus
+  note    String?     @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@map("order_events")
+}
+
+// ------------------------------------------------------------------
+// Editable site content
+// ------------------------------------------------------------------
+
+/// Flexible key/value store for homepage, about, and contact content.
+model SiteSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+/// Animated homepage counters. Unpublished stats stay hidden on the
+/// storefront until an admin supplies a real figure.
+model Stat {
+  id          String  @id @default(cuid())
+  label       String
+  value       String
+  suffix      String?
+  icon        String?
+  /// "products" | "collections" resolve live from the database instead of `value`
+  computed    String?
+  isPublished Boolean @default(false)
+  sortOrder   Int     @default(0)
+
+  updatedAt DateTime @updatedAt
+
+  @@map("stats")
+}
+
+model Banner {
+  id        String  @id @default(cuid())
+  title     String
+  subtitle  String? @db.Text
+  image     String
+  link      String?
+  ctaLabel  String?
+  placement String  @default("home")
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([placement])
+  @@map("banners")
+}
+
+model ContactMessage {
+  id      String  @id @default(cuid())
+  name    String
+  email   String
+  phone   String?
+  subject String
+  message String  @db.Text
+  isRead  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([isRead])
+  @@map("contact_messages")
+}
