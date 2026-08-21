@@ -144,6 +144,7 @@ npm run e2e:fixtures # recreate just the ZZTEST-* test products
 npm run a11y        # accessibility audit of the rendered HTML
 npm run contrast    # WCAG contrast of the design tokens, both themes
 npm run db:test     # verify a DATABASE_URL before deploying
+npm run uploads:test # verify UPLOAD_DIR resolves and refuses traversal
 npm run set-admin-password   # rotate an admin password (generates one if none given)
 ```
 
@@ -266,7 +267,7 @@ would — real cookies, real middleware, real MySQL. Nothing in it is mocked.
 
 ```bash
 npm run dev     # terminal 1
-npm run e2e     # terminal 2 — 390 assertions across 9 suites
+npm run e2e     # terminal 2 — 408 assertions across 10 suites
 ```
 
 | Suite                      | Covers                                                              |
@@ -279,6 +280,7 @@ npm run e2e     # terminal 2 — 390 assertions across 9 suites
 | `scripts/e2e-email.mjs`    | email driver selection, configuration reporting, template rendering and escaping, provider-failure handling |
 | `scripts/e2e-stores.mjs`   | the browser-side cart and wishlist Zustand stores — rehydration, the `ready` flag, quantity caps, corrupt-storage recovery |
 | `scripts/e2e-demo-journey.mjs` | the whole customer journey: wishlist to cart to COD order to admin fulfilment |
+| `scripts/e2e-uploads.mjs`  | upload paths in both modes, and path-traversal defence |
 | `scripts/e2e-theme.mjs`    | the pre-paint theme snippet, executed in a DOM stub across every stored/OS combination, plus `applyTheme` agreement |
 
 The admin suites call real server actions through `src/app/api/e2e-harness/route.ts`,
@@ -355,7 +357,7 @@ Verified by actually running it against MySQL:
 - `npm run db:push` + `npm run db:seed` — 3 collections, 90 products
   (NEXT 36 / NATIONAL 41 / SAPPHIRE 13), 7 categories, 1 admin, 4 stats.
   Re-running the seed is idempotent.
-- `npm run e2e` — 390 assertions across 9 suites, all passing
+- `npm run e2e` — 408 assertions across 10 suites, all passing
 - `npm run a11y` — 0 critical, 0 serious, 0 moderate
 
 ### The cart and wishlist hydration bug
@@ -650,9 +652,10 @@ orders and edits products.
 
 ### Things that are easy to miss
 
-- **`public/uploads` must be on a persistent disk.** See the hosting note
-  below. Back it up with the database, not separately — an image row without
-  its file is a broken product page.
+- **`public/uploads` must be on a persistent disk.** Container hosts wipe the
+  filesystem on every deploy. See *Uploads on a container host* below.
+  Back it up **with** the database, never separately — an image row whose file
+  is missing is a broken product page.
 - **Nginx must set `X-Forwarded-For`.** `clientIp()` falls back to the string
   `"unknown"` when the header is absent, which puts *every visitor in one
   shared rate-limit bucket* — five registrations per ten minutes for the whole
@@ -663,6 +666,51 @@ orders and edits products.
 - **Razorpay stays off** until real keys are supplied and a live transaction
   has been tested. `PAYMENTS_ENABLED=false` keeps checkout on Cash on Delivery,
   and the server refuses online orders outright.
+
+### Uploads on a container host (Railway, Fly, Docker)
+
+Product images are written to disk. On Railway, Fly.io, and most container
+platforms that disk is **ephemeral** — every redeploy starts from a fresh
+image, so uploaded photographs silently disappear while their `product_images`
+rows survive, leaving broken product pages.
+
+`UPLOAD_DIR` accepts two shapes, and the code handles both:
+
+| Value | Where files live | Who serves them |
+| ----- | ---------------- | --------------- |
+| `public/uploads` (default) | inside the app | Next's static handler — fastest |
+| `/data/uploads` (absolute) | a mounted volume | `src/app/uploads/[...path]/route.ts` |
+
+The public URL is `/uploads/...` in **both** cases, so rows already in
+`product_images` keep resolving if the directory ever moves.
+
+**Railway setup:**
+
+1. Service → **Settings → Volumes → Add volume**
+2. Mount path: `/data`
+3. Service → **Variables**, add: `UPLOAD_DIR=/data/uploads`
+4. Redeploy
+
+Verify by uploading an image in the admin, redeploying, and reloading the
+product page. The image must still be there.
+
+> **Why an absolute path needs care.** `path.join(cwd, "/data/uploads")`
+> returns `<cwd>/data/uploads` — inside the container, not on the volume. The
+> code uses `path.resolve`, and `npm run uploads:test` asserts specifically
+> that an absolute `UPLOAD_DIR` does **not** fall back inside the project.
+> That failure is invisible until a redeploy eats the images.
+
+**Limits of a volume**, all fine at this scale but worth knowing:
+
+- **One instance only.** A Railway volume attaches to a single replica, so the
+  app cannot be scaled horizontally while using one. (The in-memory rate
+  limiter has the same constraint, so the two move together.)
+- **Backups are yours.** Take the volume and the database together.
+- **Fixed size.** Uploads fail once it fills.
+
+Outgrowing those means moving to object storage. The interface is deliberately
+small — `storeImage` and `deleteStoredImage` in `src/lib/storage/local.ts`,
+used by exactly two call sites — so an S3/R2 driver is a contained change.
 
 ### Hosting
 

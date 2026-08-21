@@ -79,6 +79,7 @@ async function main() {
     ["scripts/e2e-email.mjs", {}, TSX_ARGS],
     ["scripts/e2e-stores.mjs", {}, TSX_ARGS],
     ["scripts/e2e-theme.mjs", {}, TSX_ARGS],
+    ["scripts/e2e-uploads.mjs", {}, TSX_ARGS],
     ["scripts/e2e-demo-journey.mjs", {}, []],
   ];
 

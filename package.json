@@ -24,7 +24,8 @@
     "demo:off": "tsx scripts/demo-data.ts clear",
     "demo:status": "tsx scripts/demo-data.ts status",
     "demo:journey": "node scripts/e2e-demo-journey.mjs",
-    "db:test": "node scripts/db-test.mjs"
+    "db:test": "node scripts/db-test.mjs",
+    "uploads:test": "tsx --conditions=react-server scripts/e2e-uploads.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
