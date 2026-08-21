@@ -143,6 +143,7 @@ npm run e2e         # end-to-end suite (needs a running dev server)
 npm run e2e:fixtures # recreate just the ZZTEST-* test products
 npm run a11y        # accessibility audit of the rendered HTML
 npm run contrast    # WCAG contrast of the design tokens, both themes
+npm run db:test     # verify a DATABASE_URL before deploying
 npm run set-admin-password   # rotate an admin password (generates one if none given)
 ```
 
@@ -634,7 +635,12 @@ npm run set-admin-password -- 'AStrongPasswordYouChoose1'
 Then verify against the live domain:
 
 ```bash
+# bash
 BASE=https://your-domain npm run a11y
+
+# PowerShell
+$env:BASE = 'https://your-domain'; npm run a11y; Remove-Item Env:BASE
+
 curl -s https://your-domain/robots.txt      # must show YOUR host, not localhost
 curl -s https://your-domain/sitemap.xml | head
 ```
@@ -694,15 +700,95 @@ npx prisma migrate dev --name init
 Then deploy with `prisma migrate deploy` only. Never run `db push` against
 production — it can drop columns without asking.
 
-### Production MySQL
+### Connecting to the production database
 
-- Create a **dedicated non-root user** for the app. The committed
-  `DATABASE_URL` uses `root` with an empty password, which is fine for the
-  Laragon dev box and unacceptable anywhere else.
-- Grant only `SELECT, INSERT, UPDATE, DELETE` on the one schema. The app never
-  needs DDL at runtime; migrations can use a separate, higher-privileged user.
-- Bind MySQL to `127.0.0.1` if it shares the box with the app.
-- `utf8mb4` / `utf8mb4_unicode_ci`, as the dev database already uses.
+Test the connection string **before** deploying anything, from the machine that
+will run the app:
+
+```bash
+npm run db:test -- 'mysql://np_app:PASSWORD@db-host:3306/national_plasto'
+npm run db:test            # or, to check whatever is in .env
+```
+
+(That form works in both PowerShell and bash. Replace `db-host` with the real
+hostname — it is a placeholder, and testing it as-is correctly reports
+*"Can't reach database server"*.)
+
+It reports the server version, the selected database, the user MySQL actually
+authenticated you as, and the table count — and names the likely cause when it
+fails, rather than leaving you with a Prisma stack trace. It never prints the
+password.
+
+**Setting the database up**, on the MySQL server:
+
+```sql
+CREATE DATABASE national_plasto
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- A dedicated user, not root. '%' allows remote connections; use 'localhost'
+-- instead when MySQL and the app share a box.
+CREATE USER 'np_app'@'%' IDENTIFIED BY 'a-long-random-password';
+
+-- No DDL at runtime: the app only ever reads and writes rows.
+GRANT SELECT, INSERT, UPDATE, DELETE ON national_plasto.* TO 'np_app'@'%';
+FLUSH PRIVILEGES;
+```
+
+Then create the schema. Migrations need more rights than the app user has, so
+run them as an admin user, overriding `DATABASE_URL` for those two commands
+only.
+
+**PowerShell (Windows):**
+
+```powershell
+$env:DATABASE_URL = 'mysql://admin:PASSWORD@db-host:3306/national_plasto'
+npx prisma migrate deploy
+npm run db:seed                      # first deploy only
+Remove-Item Env:DATABASE_URL         # important — do not leave it set
+```
+
+**bash (Linux server, macOS, Git Bash):**
+
+```bash
+DATABASE_URL='mysql://admin:PASSWORD@db-host:3306/national_plasto' npx prisma migrate deploy
+DATABASE_URL='mysql://admin:PASSWORD@db-host:3306/national_plasto' npm run db:seed
+```
+
+> PowerShell has no `VAR=value command` form — that is bash syntax, and it
+> fails with *"is not recognized as the name of a cmdlet"*. Set `$env:VAR`
+> first, then run the command, then clear it. An env var set this way outlives
+> the command and would silently override `.env` for everything else you run in
+> that window.
+
+Afterwards put the **`np_app`** URL in `.env` and never the admin one.
+
+**Writing the URL correctly.** The password must be URL-encoded — this is the
+single most common cause of a connection that "should work":
+
+| Character | Write as |
+| --------- | -------- |
+| `@` | `%40` |
+| `#` | `%23` |
+| `/` | `%2F` |
+| `:` | `%3A` |
+| `?` | `%3F` |
+
+So `P@ss/w0rd#1` becomes `P%40ss%2Fw0rd%231`.
+
+**Other rules that bite:**
+
+- **Bind MySQL to `127.0.0.1`** when it shares a box with the app, and create
+  the user as `'np_app'@'localhost'`. Only expose port 3306 to the network if
+  the database genuinely lives elsewhere — and then firewall it to the app
+  server's IP, never `0.0.0.0`.
+- **MySQL 8.4 removed `mysql_native_password`.** Users must be created with
+  `caching_sha2_password`, which is the default — but an older `CREATE USER`
+  snippet that names the old plugin will fail. Confusingly, MySQL reports this
+  the same way as a wrong password; `npm run db:test` calls that out.
+- Managed MySQL (PlanetScale, RDS, Aiven) usually requires TLS. Append
+  `?sslaccept=strict` to the URL, or `?ssl={"rejectUnauthorized":true}`.
+- Keep `utf8mb4` / `utf8mb4_unicode_ci`, matching the dev database — product
+  names and addresses need it.
 
 ### Backups — two things, not one
 

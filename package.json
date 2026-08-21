@@ -23,7 +23,8 @@
     "demo:on": "tsx scripts/demo-data.ts apply",
     "demo:off": "tsx scripts/demo-data.ts clear",
     "demo:status": "tsx scripts/demo-data.ts status",
-    "demo:journey": "node scripts/e2e-demo-journey.mjs"
+    "demo:journey": "node scripts/e2e-demo-journey.mjs",
+    "db:test": "node scripts/db-test.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
