@@ -3,6 +3,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { markReadyOnHydration } from "@/hooks/use-persist-ready";
+
 export interface CartLine {
   productId: string;
   quantity: number;
@@ -74,13 +76,19 @@ export const useCart = create<CartState>()(
       name: "np-cart",
       version: 1,
       partialize: (s) => ({ lines: s.lines }),
-      onRehydrateStorage: () => (state) => {
-        state?.replace(state.lines ?? []);
-        useCart.setState({ ready: true });
+      onRehydrateStorage: () => (_state, error) => {
+        // Do NOT touch `useCart` here — persist hydrates synchronously inside
+        // create(), so the binding above does not exist yet. See
+        // markReadyOnHydration() for the whole story.
+        if (error) {
+          console.warn("[cart] could not restore the saved cart:", error);
+        }
       },
     },
   ),
 );
+
+markReadyOnHydration(useCart);
 
 /** Total number of units in the cart. */
 export function useCartCount(): number {

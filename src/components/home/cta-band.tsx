@@ -15,7 +15,7 @@ export function CtaBand({ phone }: { phone: string }) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.65, ease: EASE }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-national-deep via-national to-accent px-8 py-14 text-center shadow-float sm:px-14 sm:py-20"
+        className="relative overflow-hidden rounded-3xl bg-linear-to-br from-national-deep via-national to-accent px-8 py-14 text-center shadow-float sm:px-14 sm:py-20"
       >
         <div aria-hidden className="pointer-events-none absolute inset-0 grid-texture opacity-10" />
         <div

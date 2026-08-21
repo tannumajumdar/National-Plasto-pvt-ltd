@@ -31,6 +31,7 @@ import { checkoutSchema } from "@/lib/validations";
 import { cn, formatINR } from "@/lib/utils";
 import type { CartLineDTO, CartTotals } from "@/types";
 import type { PaymentConfig } from "@/lib/payments";
+import { payWithRazorpay } from "@/lib/razorpay-checkout";
 
 type CheckoutValues = z.infer<typeof checkoutSchema>;
 
@@ -158,17 +159,75 @@ export function CheckoutForm({
         return;
       }
 
-      if (data.requiresPayment) {
-        // The order exists but is unpaid. Online payment is not implemented,
-        // so send the customer somewhere honest rather than faking success.
-        toast.info("Order recorded — payment pending", {
-          description: "Online payment is not yet available. Our team will contact you.",
-        });
-      } else {
+      // The order now exists and stock is committed, so the cart is spent
+      // whichever way payment goes.
+      clearCart();
+
+      if (!data.requiresPayment) {
         toast.success("Order placed", { description: `Order ${data.order.orderNumber}` });
+        router.push(`/order-confirmation/${data.order.orderNumber}`);
+        return;
       }
 
-      clearCart();
+      // Online payment. If Razorpay could not be opened, say so plainly rather
+      // than pretending the order is complete.
+      if (!data.razorpay) {
+        toast.warning("Order recorded — payment not started", {
+          description:
+            data.paymentError ?? "We could not open the payment window. Our team will contact you.",
+        });
+        router.push(`/order-confirmation/${data.order.orderNumber}`);
+        return;
+      }
+
+      const outcome = await payWithRazorpay({
+        keyId: data.razorpay.keyId,
+        razorpayOrderId: data.razorpay.orderId,
+        amountPaise: data.razorpay.amount,
+        orderNumber: data.order.orderNumber,
+        customer: {
+          name: values.customerName,
+          email: values.customerEmail,
+          phone: values.customerPhone,
+        },
+      });
+
+      if (outcome.status !== "completed") {
+        toast.warning(
+          outcome.status === "dismissed" ? "Payment cancelled" : "Payment did not go through",
+          {
+            description:
+              outcome.status === "failed"
+                ? outcome.message
+                : "Your order is saved as unpaid. You can pay on delivery instead.",
+          },
+        );
+        router.push(`/order-confirmation/${data.order.orderNumber}`);
+        return;
+      }
+
+      // Never trust the widget's word for it — the server re-derives the
+      // signature before anything is marked paid.
+      const verifyRes = await fetch("/api/payments/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId: data.order.id,
+          razorpayOrderId: outcome.response.razorpay_order_id,
+          razorpayPaymentId: outcome.response.razorpay_payment_id,
+          signature: outcome.response.razorpay_signature,
+        }),
+      });
+      const verifyData = await verifyRes.json();
+
+      if (!verifyRes.ok) {
+        toast.error("Payment could not be verified", {
+          description: verifyData.error ?? "Please contact us with your order number.",
+        });
+      } else {
+        toast.success("Payment received", { description: `Order ${data.order.orderNumber}` });
+      }
+
       router.push(`/order-confirmation/${data.order.orderNumber}`);
     } catch {
       setSubmitError("Network error. Check your connection and try again.");
@@ -462,7 +521,7 @@ function Section({
       className="rounded-2xl border border-border bg-card p-6 shadow-soft sm:p-7"
     >
       <div className="mb-6 flex items-center gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-accent/18 to-accent/5 text-accent">
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-linear-to-br from-accent/18 to-accent/5 text-accent">
           <Icon className="size-5" />
         </span>
         <h2 className="text-lg font-bold tracking-tight">

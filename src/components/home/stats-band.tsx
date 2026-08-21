@@ -16,16 +16,9 @@ export function StatsBand({ stats }: { stats: StatDTO[] }) {
   if (stats.length === 0) return null;
 
   return (
-    <section className="relative overflow-hidden bg-primary py-16 text-primary-foreground sm:py-20">
-      <div aria-hidden className="pointer-events-none absolute inset-0 grid-texture opacity-[0.07]" />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -left-20 top-0 size-96 rounded-full bg-accent/20 blur-[100px]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -bottom-32 right-0 size-96 rounded-full bg-sapphire/20 blur-[100px]"
-      />
+    <section className="section-ink relative overflow-hidden py-18 sm:py-24">
+      <div aria-hidden className="rule-fade-bright absolute inset-x-0 top-0" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 dot-grid opacity-40" />
 
       <div className="container-page relative">
         <div
@@ -64,7 +57,7 @@ export function StatsBand({ stats }: { stats: StatDTO[] }) {
                   )}
                 </p>
 
-                <p className="mt-2 text-sm font-medium uppercase tracking-wider text-primary-foreground/65">
+                <p className="mt-2 text-sm font-medium uppercase tracking-wider text-brand-foreground/65">
                   {stat.label}
                 </p>
               </motion.div>

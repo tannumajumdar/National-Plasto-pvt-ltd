@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import prisma from "@/lib/db/prisma";
 import { requireAdmin } from "@/lib/auth/session";
 import { getPaymentConfig } from "@/lib/payments";
+import { getEmailStatus } from "@/lib/email";
 import { SITE } from "@/lib/constants";
 import { formatINR } from "@/lib/utils";
 import { FLAT_SHIPPING_RATE, FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
@@ -31,6 +32,7 @@ export const metadata: Metadata = {
 export default async function AdminSettingsPage() {
   const admin = await requireAdmin();
   const payments = getPaymentConfig();
+  const email = getEmailStatus();
 
   const rows = await prisma.contactMessage.findMany({
     orderBy: [{ isRead: "asc" }, { createdAt: "desc" }],
@@ -57,14 +59,15 @@ export default async function AdminSettingsPage() {
       configured: payments.onlineEnabled,
       detail: payments.onlineEnabled
         ? "Razorpay keys are present and online payment is enabled."
-        : "Not configured. Orders can still be placed with Cash on Delivery. To enable online payment, set PAYMENTS_ENABLED=true with RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET, then implement createRazorpayOrder() and verifyRazorpaySignature() in src/lib/payments.ts.",
+        : "Not configured. Orders can still be placed with Cash on Delivery. The integration is fully implemented — to switch it on, set PAYMENTS_ENABLED=true with RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and NEXT_PUBLIC_RAZORPAY_KEY_ID, then restart the server.",
     },
     {
       icon: Mail,
       name: "Transactional email",
-      configured: false,
-      detail:
-        "No email provider is wired up. Contact enquiries are saved to the inbox below, and password-reset links are logged to the server console in development instead of being emailed.",
+      configured: email.configured,
+      detail: email.configured
+        ? `Sending via ${email.provider} as ${email.from}. Password resets, order confirmations and contact notifications are delivered.`
+        : `${email.reason} Contact enquiries are still saved to the inbox below, and password-reset links are printed to the server console. Set EMAIL_PROVIDER (resend or brevo), the matching API key, and EMAIL_FROM to enable delivery.`,
     },
     {
       icon: HardDrive,

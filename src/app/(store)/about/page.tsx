@@ -54,7 +54,7 @@ export default async function AboutPage() {
           ].map((item, i) => (
             <Reveal key={item.label} delay={i * 0.1}>
               <article className="group h-full rounded-2xl border border-border bg-card p-7 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift">
-                <span className="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-accent/18 to-accent/5 text-accent transition-transform duration-300 group-hover:scale-110">
+                <span className="grid size-12 place-items-center rounded-2xl bg-linear-to-br from-accent/18 to-accent/5 text-accent transition-transform duration-300 group-hover:scale-110">
                   <item.icon className="size-6" />
                 </span>
                 <h2 className="mt-5 text-lg font-semibold tracking-tight">{item.label}</h2>

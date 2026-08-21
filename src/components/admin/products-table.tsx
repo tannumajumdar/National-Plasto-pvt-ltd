@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  AlertTriangle,
   ExternalLink,
   Loader2,
   MoreHorizontal,
@@ -45,10 +44,11 @@ import {
 } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ProductVisual } from "@/components/products/product-visual";
+import { PriceCell } from "@/components/admin/price-cell";
+import { StockCell } from "@/components/admin/stock-cell";
 import { EASE } from "@/components/animations/motion-primitives";
 import { useDebounce } from "@/hooks/use-debounce";
 import { bulkUpdateProducts, deleteProduct } from "@/lib/actions/products";
-import { cn, formatINR } from "@/lib/utils";
 import type { AccentToken } from "@/lib/placeholder";
 
 export interface AdminProductRow {
@@ -356,32 +356,21 @@ export function ProductsTable({
                   </TableCell>
 
                   <TableCell className="hidden lg:table-cell">
-                    {product.price === null ? (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
-                        <AlertTriangle className="size-3.5" />
-                        Not set
-                      </span>
-                    ) : (
-                      <span className="font-medium tabular-nums">
-                        {formatINR(product.discountPrice ?? product.price)}
-                      </span>
-                    )}
+                    <PriceCell
+                      productId={product.id}
+                      productName={product.name}
+                      price={product.price}
+                      discountPrice={product.discountPrice}
+                    />
                   </TableCell>
 
                   <TableCell className="hidden lg:table-cell">
-                    {!product.trackStock ? (
-                      <span className="text-xs text-muted-foreground">Not tracked</span>
-                    ) : (
-                      <span
-                        className={cn(
-                          "font-medium tabular-nums",
-                          product.stock === 0 && "text-rose-600 dark:text-rose-400",
-                          product.stock > 0 && product.stock <= 5 && "text-amber-600 dark:text-amber-400",
-                        )}
-                      >
-                        {product.stock}
-                      </span>
-                    )}
+                    <StockCell
+                      productId={product.id}
+                      productName={product.name}
+                      stock={product.stock}
+                      trackStock={product.trackStock}
+                    />
                   </TableCell>
 
                   <TableCell>

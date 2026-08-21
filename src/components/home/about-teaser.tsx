@@ -45,7 +45,7 @@ export function AboutTeaser({ content }: { content: AboutContent }) {
               transition={{ duration: 0.6, delay: i * 0.12, ease: EASE }}
               className="group flex gap-5 rounded-2xl border border-border bg-card p-6 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
             >
-              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-accent/18 to-accent/5 text-accent transition-transform duration-300 group-hover:scale-110">
+              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-accent/18 to-accent/5 text-accent transition-transform duration-300 group-hover:scale-110">
                 <pillar.icon className="size-6" />
               </span>
               <span>

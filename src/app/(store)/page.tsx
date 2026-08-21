@@ -4,6 +4,7 @@ import { AboutTeaser } from "@/components/home/about-teaser";
 import { CollectionsShowcase } from "@/components/home/collections-showcase";
 import { CtaBand } from "@/components/home/cta-band";
 import { Hero } from "@/components/home/hero";
+import { MarqueeBand } from "@/components/home/marquee-band";
 import { ProductRail } from "@/components/home/product-rail";
 import { StatsBand } from "@/components/home/stats-band";
 import { WhyChooseUs } from "@/components/home/why-choose-us";
@@ -75,6 +76,8 @@ export default async function HomePage() {
   return (
     <>
       <Hero content={hero} showcase={heroCards} productCount={productCount} />
+
+      <MarqueeBand />
 
       <CollectionsShowcase collections={collections} previews={previews} />
 

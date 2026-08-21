@@ -105,7 +105,7 @@ export function SearchOverlay({
           <button
             type="button"
             aria-label="Close search"
-            className="absolute inset-0 cursor-default bg-primary/50 backdrop-blur-md"
+            className="absolute inset-0 cursor-default bg-brand/50 backdrop-blur-md"
             onClick={() => onOpenChange(false)}
           />
 

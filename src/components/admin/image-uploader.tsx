@@ -179,7 +179,7 @@ export function ImageUploader({
                   </span>
                 )}
 
-                <div className="absolute inset-0 flex items-end justify-between gap-1 bg-gradient-to-t from-black/70 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
+                <div className="absolute inset-0 flex items-end justify-between gap-1 bg-linear-to-t from-black/70 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
                   {!single && (
                     <div className="flex gap-1">
                       <button

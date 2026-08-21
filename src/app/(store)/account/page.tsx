@@ -38,7 +38,7 @@ export default async function AccountPage() {
           <Link key={tile.label} href={tile.href}>
             <Card className="h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-lift">
               <CardContent className="flex items-center gap-4 p-5">
-                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-accent/18 to-accent/5 text-accent">
+                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-linear-to-br from-accent/18 to-accent/5 text-accent">
                   <tile.icon className="size-5" />
                 </span>
                 <span className="min-w-0">

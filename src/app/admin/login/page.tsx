@@ -20,7 +20,7 @@ export default async function AdminLoginPage() {
   if (user?.role === "ADMIN") redirect("/admin");
 
   return (
-    <div className="relative grid min-h-dvh place-items-center overflow-hidden bg-primary px-5 py-12">
+    <div className="relative grid min-h-dvh place-items-center overflow-hidden bg-brand px-5 py-12">
       <div aria-hidden className="pointer-events-none absolute inset-0 grid-texture opacity-[0.08]" />
       <div
         aria-hidden
@@ -33,8 +33,8 @@ export default async function AdminLoginPage() {
 
       <div className="relative w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
-          <Logo href={null} inverted />
-          <span className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold text-primary-foreground backdrop-blur">
+          <Logo href={null} onBrand />
+          <span className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold text-brand-foreground backdrop-blur">
             <ShieldCheck className="size-3.5 text-accent" />
             Administrator access
           </span>
@@ -46,7 +46,7 @@ export default async function AdminLoginPage() {
           </Suspense>
         </div>
 
-        <p className="mt-8 text-center text-xs text-primary-foreground/45">
+        <p className="mt-8 text-center text-xs text-brand-foreground/45">
           © {new Date().getFullYear()} {SITE.legalName} · Authorised personnel only
         </p>
       </div>

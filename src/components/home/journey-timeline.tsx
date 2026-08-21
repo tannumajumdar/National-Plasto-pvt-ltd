@@ -35,7 +35,7 @@ export function JourneyTimeline({ content }: { content: JourneyContent }) {
         {/* Spine runs through the centre of every node */}
         <span
           aria-hidden
-          className="absolute left-4 top-2 h-[calc(100%-1rem)] w-px -translate-x-1/2 bg-gradient-to-b from-accent via-border to-transparent"
+          className="absolute left-4 top-2 h-[calc(100%-1rem)] w-px -translate-x-1/2 bg-linear-to-b from-accent via-border to-transparent"
         />
 
         {content.milestones.map((milestone, i) => (

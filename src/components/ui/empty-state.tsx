@@ -28,10 +28,10 @@ export function EmptyState({
       <div className="relative">
         <span
           aria-hidden
-          className="absolute inset-0 -z-10 rounded-3xl bg-accent/15 blur-2xl"
+          className="absolute inset-0 -z-10 rounded-3xl bg-linear-to-br from-accent/25 to-cyan/20 blur-2xl"
         />
-        <span className="grid size-20 place-items-center rounded-3xl border border-border bg-card shadow-soft">
-          <Icon className="size-9 text-muted-foreground" />
+        <span className="grid size-20 place-items-center rounded-3xl bg-card ring-1 ring-border/70 shadow-lift">
+          <Icon className="size-9 text-accent" />
         </span>
       </div>
 

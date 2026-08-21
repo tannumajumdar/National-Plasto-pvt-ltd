@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
+import { ThemeToggle } from "@/components/layout/theme-toggle";
+
 export interface AdminCrumb {
   label: string;
   href?: string;
@@ -56,7 +58,10 @@ export function AdminTopbar({
           )}
         </div>
 
-        {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+        <div className="flex shrink-0 items-center gap-2">
+          <ThemeToggle />
+          {actions}
+        </div>
       </div>
     </header>
   );

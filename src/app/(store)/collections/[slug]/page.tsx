@@ -91,7 +91,7 @@ export default async function CollectionPage({
       {/* Collection hero banner */}
       <section
         className={cn(
-          "relative isolate overflow-hidden bg-gradient-to-br py-16 sm:py-24",
+          "relative isolate overflow-hidden bg-linear-to-br py-16 sm:py-24",
           theme.gradient,
         )}
       >

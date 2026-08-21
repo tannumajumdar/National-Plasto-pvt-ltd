@@ -1,6 +1,9 @@
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { SkipToContent } from "@/components/layout/skip-to-content";
+import { PageTransition } from "@/components/layout/page-transition";
 import { CartSync } from "@/components/cart/cart-sync";
+import { CartDrawer } from "@/components/cart/cart-drawer";
 import { SessionProvider } from "@/hooks/use-session";
 
 /**
@@ -13,10 +16,19 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
   return (
     <SessionProvider>
       <div className="flex min-h-dvh flex-col">
+        <SkipToContent />
         <Header />
         {/* Merges the guest cart into the signed-in user's server cart. */}
         <CartSync />
-        <main className="flex-1">{children}</main>
+        {/*
+          pt-20 reserves the unscrolled height of the now-fixed header. The
+          homepage hero cancels it with -mt-20 so it can paint behind the bar;
+          every other page simply starts underneath it.
+        */}
+        <main id="main-content" tabIndex={-1} className="flex-1 pt-20">
+          <PageTransition>{children}</PageTransition>
+        </main>
+        <CartDrawer />
         <Footer />
       </div>
     </SessionProvider>

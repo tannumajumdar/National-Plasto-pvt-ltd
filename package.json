@@ -13,7 +13,17 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "db:reset": "prisma migrate reset --force"
+    "db:reset": "prisma migrate reset --force",
+    "e2e": "node scripts/e2e-all.mjs",
+    "e2e:fixtures": "tsx scripts/e2e-fixtures.ts reset",
+    "a11y": "node scripts/a11y-audit.mjs",
+    "set-admin-password": "tsx scripts/set-admin-password.ts",
+    "contrast": "node scripts/contrast-audit.mjs",
+    "import-images": "tsx scripts/import-product-images.ts",
+    "demo:on": "tsx scripts/demo-data.ts apply",
+    "demo:off": "tsx scripts/demo-data.ts clear",
+    "demo:status": "tsx scripts/demo-data.ts status",
+    "demo:journey": "node scripts/e2e-demo-journey.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

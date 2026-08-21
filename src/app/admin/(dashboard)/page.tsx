@@ -130,7 +130,15 @@ export default async function AdminDashboardPage() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {tiles.map((tile, i) => (
             <Reveal key={tile.label} delay={i * 0.07}>
-              <Card className="h-full overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lift">
+              <Card className="group relative h-full overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:shadow-lift hover:ring-accent/25">
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute -right-10 -top-10 size-28 rounded-full bg-linear-to-br from-accent/18 to-cyan/10 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100"
+                />
+                <span
+                  aria-hidden
+                  className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-linear-to-r from-accent to-cyan transition-transform duration-500 group-hover:scale-x-100"
+                />
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between gap-3">
                     <span

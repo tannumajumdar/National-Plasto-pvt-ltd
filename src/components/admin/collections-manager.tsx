@@ -64,9 +64,9 @@ interface CollectionFormValues {
 }
 
 const ACCENT_SWATCH: Record<string, string> = {
-  next: "bg-gradient-to-br from-next-deep to-next",
-  national: "bg-gradient-to-br from-national-deep to-national",
-  sapphire: "bg-gradient-to-br from-sapphire-deep to-sapphire",
+  next: "bg-linear-to-br from-next-deep to-next",
+  national: "bg-linear-to-br from-national-deep to-national",
+  sapphire: "bg-linear-to-br from-sapphire-deep to-sapphire",
 };
 
 export function CollectionsManager({ collections }: { collections: AdminCollection[] }) {

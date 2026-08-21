@@ -3,14 +3,21 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Layers, MapPin, Sparkles } from "lucide-react";
+import { ArrowRight, MapPin, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ProductVisual } from "@/components/products/product-visual";
-import { EASE } from "@/components/animations/motion-primitives";
-import { cn } from "@/lib/utils";
+import { formatINR } from "@/lib/utils";
 import type { HeroContent, ProductCardDTO } from "@/types";
 
+/**
+ * Cinematic hero.
+ *
+ * Deliberately the only ink-dark block above the fold: it sets the brand tone
+ * and gives the transparent navbar something to sit on, then the page drops
+ * into soft white for the catalogue. Everything animated here moves on
+ * `transform` or `opacity` only, so it stays on the compositor.
+ */
 export function Hero({
   content,
   showcase,
@@ -28,62 +35,90 @@ export function Hero({
     offset: ["start start", "end start"],
   });
 
-  // Layered parallax — background drifts slowest, cards fastest.
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "26%"]);
-  const copyY = useTransform(scrollYProgress, [0, 1], ["0%", "42%"]);
-  const copyOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
-  const cardsY = useTransform(scrollYProgress, [0, 1], ["0%", "-14%"]);
+  // Layered parallax: the glow field drifts slowest, the copy fastest, so the
+  // scene separates in depth as the page scrolls away.
+  const glowY = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
+  const copyY = useTransform(scrollYProgress, [0, 1], ["0%", "38%"]);
+  const copyFade = useTransform(scrollYProgress, [0, 0.72], [1, 0]);
+  const artY = useTransform(scrollYProgress, [0, 1], ["0%", "-12%"]);
 
-  // Split the headline so the closing phrase can carry the brand gradient.
-  const words = content.headline.trim().split(" ");
-  const head = words.slice(0, Math.max(1, words.length - 2)).join(" ");
-  const tail = words.slice(Math.max(1, words.length - 2)).join(" ");
+  // The last two words carry the gradient, so the headline has a focal point
+  // without needing the client to mark anything up.
+  const words = content.headline.trim().split(/\s+/);
+  const splitAt = Math.max(1, words.length - 2);
+  const head = words.slice(0, splitAt).join(" ");
+  const tail = words.slice(splitAt).join(" ");
+
+  const hero = showcase[0];
+  const side = showcase.slice(1, 3);
 
   return (
     <section
       ref={ref}
-      className="relative isolate overflow-hidden bg-background pb-20 pt-12 sm:pb-28 sm:pt-16 lg:pb-36 lg:pt-20"
+      className="section-ink relative isolate -mt-20 overflow-hidden pb-24 pt-32 sm:pb-28 sm:pt-36 lg:pb-36 lg:pt-40"
     >
-      {/* ---------- Background ---------- */}
-      <motion.div style={reduced ? undefined : { y: bgY }} className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 grid-texture opacity-[0.55] mask-fade-b" />
-        <div className="absolute -left-40 -top-40 size-[38rem] rounded-full bg-accent/20 blur-[110px] animate-aurora" />
-        <div className="absolute -right-32 top-10 size-[32rem] rounded-full bg-sapphire/18 blur-[110px] animate-aurora [animation-delay:-6s]" />
-        <div className="absolute bottom-0 left-1/3 size-[30rem] rounded-full bg-next/14 blur-[110px] animate-aurora [animation-delay:-11s]" />
+      {/* ---------------- background layers ---------------- */}
+      <motion.div
+        aria-hidden
+        style={reduced ? undefined : { y: glowY }}
+        className="pointer-events-none absolute inset-0 -z-10"
+      >
+        <div className="absolute inset-0 dot-grid opacity-60 mask-fade-b" />
+        <div className="absolute -left-40 -top-32 size-[42rem] rounded-full bg-accent/25 blur-[130px] animate-aurora" />
+        <div className="absolute -right-40 top-24 size-[34rem] rounded-full bg-cyan/20 blur-[130px] animate-aurora [animation-delay:-6s]" />
+        <div className="absolute -bottom-40 left-1/3 size-[32rem] rounded-full bg-gold/12 blur-[130px] animate-aurora [animation-delay:-11s]" />
       </motion.div>
 
+      {/* A few slow motes. Six, not sixty — enough to feel alive. */}
+      {!reduced && (
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+          {PARTICLES.map((p, i) => (
+            <motion.span
+              key={i}
+              className="absolute rounded-full bg-cyan/50"
+              style={{ left: p.left, top: p.top, width: p.size, height: p.size }}
+              animate={{ y: [0, -26, 0], opacity: [0.15, 0.65, 0.15] }}
+              transition={{ duration: p.duration, repeat: Infinity, ease: "easeInOut", delay: p.delay }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Hairline that reads as the boundary with the navbar above. */}
+      <div aria-hidden className="rule-fade-bright absolute inset-x-0 top-20 opacity-40" />
+
       <div className="container-page">
-        <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_1fr] lg:gap-10">
-          {/* ---------- Copy ---------- */}
+        <div className="grid items-center gap-16 lg:grid-cols-[1.06fr_1fr] lg:gap-12">
+          {/* ---------------- copy ---------------- */}
           <motion.div
-            style={reduced ? undefined : { y: copyY, opacity: copyOpacity }}
+            style={reduced ? undefined : { y: copyY, opacity: copyFade }}
             className="relative z-10 text-center lg:text-left"
           >
             <motion.span
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: EASE }}
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-1.5 text-xs font-semibold tracking-wide text-muted-foreground shadow-soft backdrop-blur"
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 py-1.5 text-[0.6875rem] font-bold uppercase tracking-[0.18em] text-cyan backdrop-blur-md"
             >
-              <MapPin className="size-3.5 text-accent" />
-              {content.eyebrow}
+              <Sparkles className="size-3.5" />
+              {content.eyebrow || "National Plasto"}
             </motion.span>
 
             <motion.h1
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 26 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.08, ease: EASE }}
-              className="mt-6 text-4xl font-extrabold leading-[1.06] tracking-tight sm:text-5xl lg:text-[3.65rem]"
+              transition={{ duration: 0.75, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+              className="display-1 mt-7 text-white"
             >
               {head}{" "}
               <span className="text-gradient-brand">{tail}</span>
             </motion.h1>
 
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 22 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.16, ease: EASE }}
-              className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg lg:mx-0"
+              transition={{ duration: 0.7, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              className="mx-auto mt-7 max-w-xl text-base leading-relaxed text-white/65 sm:text-lg lg:mx-0"
             >
               {content.subheadline}
             </motion.p>
@@ -91,134 +126,186 @@ export function Hero({
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.24, ease: EASE }}
-              className="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row lg:justify-start"
+              transition={{ duration: 0.7, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start"
             >
-              <Button asChild size="lg" variant="accent" className="group">
-                <Link href={content.primaryCta.href}>
-                  {content.primaryCta.label}
-                  <ArrowRight className="transition-transform duration-300 group-hover:translate-x-1" />
+              <Button asChild variant="accent" size="xl" className="w-full sm:w-auto">
+                <Link href={content.primaryCta.href || "/collections"}>
+                  {content.primaryCta.label || "Explore Collection"}
+                  <ArrowRight className="cta-arrow" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link href={content.secondaryCta.href}>
-                  <Layers />
-                  {content.secondaryCta.label}
+              <Button asChild variant="onDark" size="xl" className="w-full sm:w-auto">
+                <Link href={content.secondaryCta.href || "/products"}>
+                  {content.secondaryCta.label || "View Products"}
                 </Link>
               </Button>
             </motion.div>
 
-            {/* Only facts we can stand behind: real catalogue counts. */}
+            {/* Facts, not marketing claims: both come from the database. */}
             <motion.dl
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.7, delay: 0.36 }}
+              transition={{ duration: 0.8, delay: 0.42 }}
               className="mt-12 flex items-center justify-center gap-8 lg:justify-start"
             >
-              <div>
-                <dt className="text-2xl font-bold tracking-tight sm:text-3xl">{productCount}</dt>
-                <dd className="mt-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <div className="text-center lg:text-left">
+                <dt className="text-2xl font-extrabold tabular-nums text-white sm:text-3xl">
+                  {productCount}+
+                </dt>
+                <dd className="mt-1 text-xs font-medium uppercase tracking-wider text-white/45">
                   Products
                 </dd>
               </div>
-              <span className="h-10 w-px bg-border" />
-              <div>
-                <dt className="text-2xl font-bold tracking-tight sm:text-3xl">3</dt>
-                <dd className="mt-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <div aria-hidden className="h-10 w-px bg-white/12" />
+              <div className="text-center lg:text-left">
+                <dt className="text-2xl font-extrabold tabular-nums text-white sm:text-3xl">3</dt>
+                <dd className="mt-1 text-xs font-medium uppercase tracking-wider text-white/45">
                   Collections
                 </dd>
               </div>
-              <span className="h-10 w-px bg-border" />
-              <div>
-                <dt className="text-2xl font-bold tracking-tight sm:text-3xl">Kolkata</dt>
-                <dd className="mt-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Made in
+              <div aria-hidden className="h-10 w-px bg-white/12" />
+              <div className="text-center lg:text-left">
+                <dt className="flex items-center gap-1.5 text-sm font-semibold text-white/80">
+                  <MapPin className="size-4 text-gold" />
+                  Kolkata
+                </dt>
+                <dd className="mt-1 text-xs font-medium uppercase tracking-wider text-white/45">
+                  West Bengal
                 </dd>
               </div>
             </motion.dl>
           </motion.div>
 
-          {/* ---------- Floating product collage ---------- */}
+          {/* ---------------- product art ---------------- */}
           <motion.div
-            style={reduced ? undefined : { y: cardsY }}
-            className="relative mx-auto h-[380px] w-full max-w-md sm:h-[460px] lg:h-[540px] lg:max-w-none"
+            style={reduced ? undefined : { y: artY }}
+            className="relative z-10 mx-auto w-full max-w-lg lg:max-w-none"
           >
-            <FloatingCard product={showcase[0]} className="left-0 top-6 w-[56%]" delay={0.15} depth={0} priority />
-            <FloatingCard product={showcase[1]} className="right-0 top-0 w-[46%]" delay={0.3} depth={1} />
-            <FloatingCard product={showcase[2]} className="bottom-0 left-[16%] w-[52%]" delay={0.45} depth={2} />
+            {hero ? (
+              <div className="relative">
+                {/* Glow puddle beneath the floating card. */}
+                <div
+                  aria-hidden
+                  className="absolute inset-x-8 bottom-2 h-24 rounded-[50%] bg-accent/30 blur-3xl"
+                />
 
-            {/* Trust chip */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.7, ease: EASE }}
-              className="absolute bottom-[22%] right-[2%] z-20 flex items-center gap-2.5 rounded-2xl border border-border bg-card/85 px-4 py-3 shadow-float backdrop-blur-md"
-            >
-              <span className="grid size-9 place-items-center rounded-xl bg-accent/15">
-                <Sparkles className="size-4 text-accent" />
-              </span>
-              <span className="text-left">
-                <span className="block text-xs font-bold leading-tight">Three collections</span>
-                <span className="block text-[11px] text-muted-foreground">
-                  NEXT · NATIONAL · SAPPHIRE
-                </span>
-              </span>
-            </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 40, scale: 0.94 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                  className="relative"
+                >
+                  <motion.div
+                    animate={reduced ? undefined : { y: [0, -14, 0], scale: [1, 1.015, 1] }}
+                    transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+                    className="glass-dark relative overflow-hidden rounded-[1.75rem] p-3 shadow-float"
+                  >
+                    <Link href={`/products/${hero.slug}`} className="block">
+                      <span className="relative block aspect-[4/3] overflow-hidden rounded-[1.35rem] bg-white/5">
+                        <ProductVisual
+                          name={hero.name}
+                          accent={hero.collection.accent}
+                          src={hero.images[0]?.url ?? null}
+                          sizes="(max-width: 1024px) 90vw, 40vw"
+                          rounded="rounded-[1.35rem]"
+                        />
+                      </span>
+                      <span className="flex items-center justify-between gap-4 px-3 pb-1 pt-4">
+                        <span className="min-w-0">
+                          <span className="block text-[0.625rem] font-bold uppercase tracking-[0.16em] text-cyan">
+                            {hero.collection.name}
+                          </span>
+                          <span className="mt-1 block truncate text-base font-semibold text-white">
+                            {hero.name}
+                          </span>
+                        </span>
+                        {hero.price !== null && (
+                          <span className="shrink-0 text-base font-bold tabular-nums text-white">
+                            {formatINR(hero.discountPrice ?? hero.price)}
+                          </span>
+                        )}
+                      </span>
+                    </Link>
+                  </motion.div>
+                </motion.div>
+
+                {/* Two smaller cards, offset, drifting on their own clocks. */}
+                {side.map((p, i) => (
+                  <motion.div
+                    key={p.id}
+                    initial={{ opacity: 0, y: 28, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.8, delay: 0.45 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                    className={
+                      i === 0
+                        ? "absolute -left-6 -bottom-10 hidden w-36 sm:block lg:-left-14 lg:w-44"
+                        : "absolute -right-4 -top-10 hidden w-32 sm:block lg:-right-10 lg:w-40"
+                    }
+                  >
+                    <motion.div
+                      animate={reduced ? undefined : { y: [0, i === 0 ? 12 : -12, 0] }}
+                      transition={{
+                        duration: 6 + i * 1.5,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: i * 0.8,
+                      }}
+                      className="glass-dark overflow-hidden rounded-2xl p-2 shadow-lift"
+                    >
+                      <Link href={`/products/${p.slug}`} className="block">
+                        <span className="relative block aspect-square overflow-hidden rounded-xl bg-white/5">
+                          <ProductVisual
+                            name={p.name}
+                            accent={p.collection.accent}
+                            src={p.images[0]?.url ?? null}
+                            sizes="180px"
+                            rounded="rounded-xl"
+                          />
+                        </span>
+                        <span className="block truncate px-1 pb-0.5 pt-2 text-xs font-medium text-white/80">
+                          {p.name}
+                        </span>
+                      </Link>
+                    </motion.div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="aspect-[4/3] rounded-[1.75rem] border border-white/10 bg-white/[0.04]" />
+            )}
           </motion.div>
         </div>
+
+        {/* ---------------- scroll indicator ---------------- */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.1, duration: 0.6 }}
+          className="mt-20 hidden justify-center lg:flex"
+        >
+          <span className="flex flex-col items-center gap-3 text-[0.625rem] font-semibold uppercase tracking-[0.22em] text-white/35">
+            Scroll
+            <span className="relative grid h-10 w-6 place-items-start justify-center rounded-full border border-white/20 pt-1.5">
+              <motion.span
+                className="size-1.5 rounded-full bg-cyan"
+                animate={reduced ? undefined : { y: [0, 14, 0], opacity: [1, 0.2, 1] }}
+                transition={{ duration: 1.9, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </span>
+          </span>
+        </motion.div>
       </div>
     </section>
   );
 }
 
-function FloatingCard({
-  product,
-  className,
-  delay,
-  depth,
-  priority = false,
-}: {
-  product?: ProductCardDTO;
-  className?: string;
-  delay: number;
-  depth: number;
-  priority?: boolean;
-}) {
-  const reduced = useReducedMotion();
-  if (!product) return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 40, rotate: depth % 2 === 0 ? -5 : 4 }}
-      animate={{ opacity: 1, y: 0, rotate: depth % 2 === 0 ? -3 : 2.5 }}
-      transition={{ duration: 0.85, delay, ease: EASE }}
-      className={cn("absolute", className)}
-    >
-      <motion.div
-        animate={reduced ? undefined : { y: [0, -14, 0] }}
-        transition={{ duration: 7 + depth * 1.4, repeat: Infinity, ease: "easeInOut", delay: depth * 0.5 }}
-        whileHover={{ scale: 1.04, rotate: 0 }}
-        className="overflow-hidden rounded-3xl border border-border bg-card shadow-float"
-      >
-        <Link href={`/products/${product.slug}`} className="block">
-          <span className="relative block aspect-square overflow-hidden bg-muted">
-            <ProductVisual
-              name={product.name}
-              accent={product.collection.accent}
-              src={product.images[0]?.url ?? null}
-              priority={priority}
-              sizes="(min-width: 1024px) 22vw, 45vw"
-              rounded="rounded-none"
-            />
-          </span>
-          <span className="block px-4 py-3">
-            <span className="block truncate text-sm font-semibold">{product.name}</span>
-            <span className="mt-0.5 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              {product.collection.name}
-            </span>
-          </span>
-        </Link>
-      </motion.div>
-    </motion.div>
-  );
-}
+/** Fixed positions — random values would differ between server and client. */
+const PARTICLES = [
+  { left: "12%", top: "22%", size: 4, duration: 7, delay: 0 },
+  { left: "78%", top: "18%", size: 3, duration: 9, delay: 1.2 },
+  { left: "34%", top: "72%", size: 5, duration: 8, delay: 0.6 },
+  { left: "88%", top: "62%", size: 3, duration: 10, delay: 2.1 },
+  { left: "58%", top: "12%", size: 4, duration: 8.5, delay: 1.7 },
+  { left: "22%", top: "52%", size: 3, duration: 11, delay: 0.3 },
+] as const;

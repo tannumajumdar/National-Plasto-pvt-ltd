@@ -147,16 +147,19 @@ export default async function ProductPage({
         </div>
       </PageHeader>
 
-      <div className="container-page py-10 lg:py-14">
-        <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
-          <ProductGallery
-            name={product.name}
-            accent={product.collection.accent}
-            images={product.images}
-          />
+      <div className="section-soft container-page py-12 lg:py-20">
+        <div className="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-start lg:gap-20">
+          {/* Gallery scrolls; the buying panel stays put beside it. */}
+          <div className="lg:sticky lg:top-28">
+            <ProductGallery
+              name={product.name}
+              accent={product.collection.accent}
+              images={product.images}
+            />
+          </div>
 
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+          <div className="lg:pt-2">
+            <h1 className="display-3 sm:text-4xl">
               {product.name}
             </h1>
 
@@ -176,7 +179,7 @@ export default async function ProductPage({
           </div>
         </div>
 
-        <div className="mt-16 lg:mt-24">
+        <div className="mt-20 lg:mt-28">
           {/* Review eligibility is resolved client-side so this page stays
               statically cached for SEO rather than becoming per-request. */}
           <ProductDetailsTabs product={product} reviews={reviews} />

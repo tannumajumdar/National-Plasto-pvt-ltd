@@ -234,6 +234,20 @@ export const adminCollectionSchema = z.object({
   sortOrder: z.coerce.number().int().min(0).max(999).default(0),
 });
 
+export const adminCategorySchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(80),
+  slug: z
+    .string()
+    .trim()
+    .min(1, "Slug is required")
+    .max(90)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers and hyphens only"),
+  description: z.string().trim().max(2000).optional().or(z.literal("")),
+  image: z.string().trim().optional().or(z.literal("")),
+  isActive: z.coerce.boolean().default(true),
+  sortOrder: z.coerce.number().int().min(0).max(999).default(0),
+});
+
 export const orderStatusSchema = z.object({
   orderId: z.string().min(1),
   status: z.enum([

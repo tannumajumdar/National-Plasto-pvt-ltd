@@ -3,10 +3,12 @@ import { z } from "zod";
 import prisma from "@/lib/db/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
 import { resolveCart } from "@/lib/cart";
-import { assertMethodAllowed } from "@/lib/payments";
+import { assertMethodAllowed, createRazorpayOrder, PaymentError } from "@/lib/payments";
 import { checkoutSchema, cartLineSchema } from "@/lib/validations";
 import { clientIp, fail, ok, parseBody, rateLimit, tooManyRequests } from "@/lib/api";
-import { generateOrderNumber } from "@/lib/utils";
+import { absoluteUrl, generateOrderNumber } from "@/lib/utils";
+import { sendEmail } from "@/lib/email";
+import { orderConfirmationEmail } from "@/lib/email-templates";
 
 const bodySchema = checkoutSchema.extend({
   lines: z.array(cartLineSchema).min(1, "Your cart is empty."),
@@ -142,12 +144,75 @@ export async function POST(request: Request) {
       return created;
     });
 
+    // For online payment, open a Razorpay order so the browser has something
+    // real to pay against. Deliberately AFTER the local order exists: if this
+    // fails, the customer still has a recorded order our team can chase, and
+    // the response says plainly that payment could not be started.
+    let razorpay: { orderId: string; amount: number; keyId: string } | null = null;
+    let paymentError: string | null = null;
+
+    if (data.paymentMethod === "RAZORPAY") {
+      try {
+        const rp = await createRazorpayOrder(totals.total, order.orderNumber);
+        await prisma.order.update({
+          where: { id: order.id },
+          data: { razorpayOrderId: rp.id },
+        });
+        razorpay = {
+          orderId: rp.id,
+          amount: rp.amount,
+          keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "",
+        };
+      } catch (err) {
+        paymentError =
+          err instanceof PaymentError
+            ? err.message
+            : "Could not start the payment. Your order has been recorded as unpaid.";
+        console.error("[orders] razorpay order creation failed:", err);
+      }
+    }
+
+    // Confirmation email. Never awaited into the failure path: a bounced
+    // email must not cost the customer an order that is already committed.
+    void sendEmail(
+      orderConfirmationEmail({
+        to: data.customerEmail,
+        customerName: data.customerName,
+        orderNumber: order.orderNumber,
+        items: lines.map((l) => ({
+          name: l.name,
+          quantity: l.quantity,
+          unitPrice: l.unitPrice!,
+          lineTotal: l.unitPrice! * l.quantity,
+        })),
+        subtotal: totals.subtotal,
+        discount: totals.discount,
+        shipping: totals.shipping,
+        total: totals.total,
+        paymentMethod: data.paymentMethod,
+        // Nothing is paid at this point, for either method.
+        paid: false,
+        address: [
+          data.customerName,
+          data.line1,
+          data.line2 || null,
+          `${data.city}, ${data.state} ${data.pincode}`,
+          data.customerPhone,
+        ]
+          .filter(Boolean)
+          .join("\n"),
+        orderUrl: absoluteUrl(`/order-confirmation/${order.orderNumber}`),
+      }),
+    ).catch((err) => console.error("[orders] confirmation email failed:", err));
+
     return ok(
       {
         order,
         // No payment has been taken. For COD this is the final state; for
         // online payment the client must still complete a real transaction.
         requiresPayment: data.paymentMethod !== "COD",
+        razorpay,
+        paymentError,
       },
       { status: 201 },
     );

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { PriceTag } from "@/components/products/price-tag";
 import { useCart } from "@/hooks/use-cart";
+import { useCartDrawer } from "@/hooks/use-cart-drawer";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { cn, formatINR } from "@/lib/utils";
 import { FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
@@ -23,6 +24,7 @@ export function PurchasePanel({ product }: { product: ProductDetailDTO }) {
   const add = useCart((s) => s.add);
   const toggleWishlist = useWishlist((s) => s.toggle);
   const wishlisted = useWishlist((s) => s.ids.includes(product.id));
+  const openCart = useCartDrawer((s) => s.setOpen);
 
   const outOfStock = product.trackStock && product.stock <= 0;
   const unpriced = product.price === null;
@@ -48,6 +50,8 @@ export function PurchasePanel({ product }: { product: ProductDetailDTO }) {
     if (!addToCart()) return;
     setAdded(true);
     toast.success("Added to cart", { description: `${qty} × ${product.name}` });
+    // Show the consequence of the click straight away.
+    openCart(true);
     setTimeout(() => setAdded(false), 2000);
   }
 

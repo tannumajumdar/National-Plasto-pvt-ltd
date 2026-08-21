@@ -66,7 +66,7 @@ export default async function ContactPage() {
               {details.map((detail, i) => (
                 <Reveal key={detail.label} delay={i * 0.08}>
                   <div className="group flex gap-5 rounded-2xl border border-border bg-card p-6 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift">
-                    <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-accent/18 to-accent/5 text-accent transition-transform duration-300 group-hover:scale-110">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-linear-to-br from-accent/18 to-accent/5 text-accent transition-transform duration-300 group-hover:scale-110">
                       <detail.icon className="size-5" />
                     </span>
                     <div className="min-w-0">

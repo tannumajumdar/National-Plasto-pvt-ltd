@@ -148,20 +148,3 @@ export const getStats = cache(async (): Promise<StatDTO[]> =>
     .filter((s) => s.value.trim() !== "");
   }, []),
 );
-
-export const getActiveBanners = cache(async (placement = "home") =>
-  safeRead(async () => {
-  const rows = await prisma.banner.findMany({
-    where: { isActive: true, placement },
-    orderBy: { sortOrder: "asc" },
-  });
-  return rows.map((b) => ({
-    id: b.id,
-    title: b.title,
-    subtitle: b.subtitle,
-    image: b.image,
-    link: b.link,
-    ctaLabel: b.ctaLabel,
-  }));
-  }, []),
-);

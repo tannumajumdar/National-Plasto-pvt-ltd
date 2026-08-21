@@ -274,6 +274,83 @@ export async function bulkUpdateProducts(raw: unknown): Promise<ActionResult> {
   return { ok: true, message: `${ids.length} products updated.` };
 }
 
+/**
+ * Inline price edit from the products table, in RUPEES.
+ *
+ * The catalogue ships with every price unset, so the alternative to this is
+ * opening 90 separate edit forms. Pass `null` to clear a price and send the
+ * product back to "Price on request".
+ *
+ * Writing price here also has to rewrite the denormalised sort keys and
+ * recompute `needsReview`, exactly as the full form does — otherwise a product
+ * priced from the table would sort wrongly and stay in the "Needs details"
+ * queue for ever.
+ */
+export async function updatePrice(
+  id: string,
+  priceRupees: number | null,
+): Promise<ActionResult> {
+  await requireAdmin();
+
+  if (priceRupees !== null) {
+    if (!Number.isFinite(priceRupees) || priceRupees < 0 || priceRupees > 10_000_000) {
+      return { ok: false, message: "Enter a price between ₹0 and ₹1,00,00,000." };
+    }
+  }
+
+  const existing = await prisma.product.findUnique({
+    where: { id },
+    select: {
+      slug: true,
+      description: true,
+      discountPrice: true,
+      images: { select: { id: true } },
+    },
+  });
+  if (!existing) return { ok: false, message: "Product not found." };
+
+  // Money is integer paise everywhere; the form talks rupees.
+  const price = priceRupees === null ? null : Math.round(priceRupees * 100);
+
+  // Clearing the price must clear any markdown with it, or the product would
+  // carry a discount against nothing.
+  const discountPrice =
+    price === null
+      ? null
+      : existing.discountPrice !== null && existing.discountPrice >= price
+        ? null
+        : existing.discountPrice;
+
+  const clearedDiscount = existing.discountPrice !== null && discountPrice === null;
+
+  const product = await prisma.product.update({
+    where: { id },
+    data: {
+      price,
+      discountPrice,
+      ...pricingFields(price, discountPrice),
+      needsReview: computeNeedsReview({
+        price,
+        description: existing.description,
+        images: existing.images.map((i) => i.id),
+      }),
+    },
+    select: { slug: true },
+  });
+
+  revalidateCatalogue(product.slug);
+
+  if (price === null) {
+    return { ok: true, message: "Price cleared — this product shows “Price on request”." };
+  }
+  return {
+    ok: true,
+    message: clearedDiscount
+      ? "Price updated. The old discount was higher than the new price, so it was removed."
+      : "Price updated.",
+  };
+}
+
 /** Inline stock edit from the products table. */
 export async function updateStock(id: string, stock: number): Promise<ActionResult> {
   await requireAdmin();

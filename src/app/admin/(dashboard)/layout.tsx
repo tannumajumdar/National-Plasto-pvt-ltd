@@ -22,6 +22,7 @@ export default async function AdminLayout({
     { label: "Dashboard", href: "/admin", icon: "LayoutDashboard" },
     { label: "Products", href: "/admin/products", icon: "Package" },
     { label: "Collections", href: "/admin/collections", icon: "Layers" },
+    { label: "Categories", href: "/admin/categories", icon: "Tags" },
     { label: "Orders", href: "/admin/orders", icon: "ShoppingBag", badge: pendingOrders },
     { label: "Customers", href: "/admin/customers", icon: "Users" },
     { label: "Reviews", href: "/admin/reviews", icon: "Star", badge: pendingReviews },
@@ -30,7 +31,7 @@ export default async function AdminLayout({
   ];
 
   return (
-    <div className="min-h-dvh bg-secondary/30">
+    <div className="section-soft min-h-dvh bg-background">
       <AdminSidebar items={items} admin={{ name: admin.name, email: admin.email }} />
       <div className="lg:pl-64">{children}</div>
     </div>

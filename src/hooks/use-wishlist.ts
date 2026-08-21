@@ -3,6 +3,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { markReadyOnHydration } from "@/hooks/use-persist-ready";
+
 interface WishlistState {
   ids: string[];
   ready: boolean;
@@ -40,12 +42,18 @@ export const useWishlist = create<WishlistState>()(
       name: "np-wishlist",
       version: 1,
       partialize: (s) => ({ ids: s.ids }),
-      onRehydrateStorage: () => () => {
-        useWishlist.setState({ ready: true });
+      onRehydrateStorage: () => (_state, error) => {
+        // Do NOT touch `useWishlist` here — persist hydrates synchronously
+        // inside create(), so the binding above does not exist yet.
+        if (error) {
+          console.warn("[wishlist] could not restore the saved wishlist:", error);
+        }
       },
     },
   ),
 );
+
+markReadyOnHydration(useWishlist);
 
 export function useIsWishlisted(productId: string): boolean {
   return useWishlist((s) => s.ids.includes(productId));

@@ -5,102 +5,136 @@
 
 /* ============================================================
    NATIONAL PLASTO — BRAND DESIGN SYSTEM
-   Ink navy foundation + saffron accent.
-   Each collection carries its own signature hue.
+   Deep navy structure, royal blue action, cyan and gold accents.
+   Each collection carries its own signature hue inside that range.
    ============================================================ */
 
 :root {
+  /* ==========================================================
+     NATIONAL PLASTO — brand palette
+       Deep Navy    #0B1F33   structure, dark surfaces
+       Royal Blue   #155EEF   primary action
+       Electric Cyan #22D3EE  energy, glow, highlights
+       Warm Gold    #F5B942   premium accents
+       Soft White   #F8FAFC   page ground
+       Ink          #07111F   full-dark sections
+     Six colours, used consistently. Nothing else.
+     ========================================================== */
+
   /* Core surfaces */
-  --background: 0 0% 100%;
-  --foreground: 213 65% 11%;
+  --background: 210 40% 98%;
+  --foreground: 221 38% 15%;
 
   --card: 0 0% 100%;
-  --card-foreground: 213 65% 11%;
+  --card-foreground: 221 38% 15%;
   --popover: 0 0% 100%;
-  --popover-foreground: 213 65% 11%;
+  --popover-foreground: 221 38% 15%;
 
-  /* Ink navy — the corporate backbone */
-  --primary: 213 62% 14%;
-  --primary-foreground: 40 92% 97%;
+  /* Deep navy — the corporate backbone */
+  --primary: 210 65% 12%;
+  --primary-foreground: 210 40% 98%;
 
-  /* Saffron — warmth, energy, Indian manufacturing heritage */
-  --accent: 33 100% 55%;
-  --accent-foreground: 213 65% 11%;
+  /* Brand surfaces: footer, admin chrome, auth panel. Deliberately absent
+     from .dark — a full-bleed brand block must not invert with the theme. */
+  --brand: 210 65% 12%;
+  --brand-foreground: 210 40% 98%;
+  /* The darkest ground, for full-width dark sections. */
+  --ink: 215 63% 7%;
+  --ink-foreground: 210 40% 98%;
 
-  --secondary: 213 30% 96%;
-  --secondary-foreground: 213 62% 18%;
+  /* Royal blue — every primary action */
+  --accent: 220 87% 51%;
+  --accent-foreground: 0 0% 100%;
 
-  --muted: 213 25% 96%;
-  --muted-foreground: 213 14% 44%;
+  /* Electric cyan + warm gold — highlights only, never body text */
+  --cyan: 188 86% 53%;
+  --gold: 40 90% 61%;
+
+  --secondary: 213 34% 95%;
+  --secondary-foreground: 210 60% 18%;
+
+  --muted: 213 30% 96%;
+  --muted-foreground: 215 20% 40%;
 
   --destructive: 0 74% 51%;
   --destructive-foreground: 0 0% 100%;
   --success: 158 68% 36%;
   --success-foreground: 0 0% 100%;
-  --warning: 33 100% 48%;
-  --warning-foreground: 213 65% 11%;
+  --warning: 40 90% 45%;
+  --warning-foreground: 210 65% 12%;
 
-  --border: 213 22% 89%;
-  --input: 213 22% 89%;
-  --ring: 33 100% 55%;
+  --border: 214 26% 90%;
+  --input: 214 26% 88%;
+  --ring: 220 87% 51%;
 
   --radius: 0.875rem;
 
-  /* Collection signatures */
-  --next: 205 90% 48%;
-  --next-deep: 214 90% 32%;
-  --national: 33 100% 52%;
-  --national-deep: 22 92% 42%;
-  --sapphire: 244 66% 52%;
-  --sapphire-deep: 250 70% 34%;
+  /* Collection signatures, tuned to sit inside the palette */
+  --next: 220 87% 51%;
+  --next-deep: 218 84% 34%;
+  --national: 40 90% 55%;
+  --national-deep: 32 88% 44%;
+  --sapphire: 188 86% 45%;
+  --sapphire-deep: 200 84% 30%;
 
-  /* Elevation */
-  --shadow-soft: 0 1px 2px hsl(213 40% 12% / 0.04), 0 4px 12px hsl(213 40% 12% / 0.05);
-  --shadow-lift: 0 2px 4px hsl(213 40% 12% / 0.04), 0 12px 32px hsl(213 40% 12% / 0.10);
-  --shadow-float: 0 8px 24px hsl(213 40% 12% / 0.10), 0 24px 64px hsl(213 40% 12% / 0.14);
-  --shadow-glow: 0 8px 32px hsl(33 100% 55% / 0.28);
+  /* Elevation — navy-tinted, never neutral grey */
+  --shadow-soft: 0 1px 2px hsl(210 50% 14% / 0.04), 0 4px 14px hsl(210 50% 14% / 0.06);
+  --shadow-lift: 0 2px 6px hsl(210 50% 14% / 0.05), 0 14px 36px hsl(210 50% 14% / 0.10);
+  --shadow-float: 0 10px 28px hsl(210 50% 14% / 0.10), 0 28px 70px hsl(210 50% 14% / 0.16);
+  --shadow-glow: 0 10px 40px hsl(220 87% 51% / 0.30);
+  --shadow-glow-cyan: 0 10px 40px hsl(188 86% 53% / 0.32);
 }
 
 .dark {
-  --background: 213 52% 7%;
-  --foreground: 210 32% 95%;
+  --background: 215 60% 6%;
+  --foreground: 210 34% 96%;
 
-  --card: 213 46% 10%;
-  --card-foreground: 210 32% 95%;
-  --popover: 213 46% 10%;
-  --popover-foreground: 210 32% 95%;
+  --card: 213 48% 9%;
+  --card-foreground: 210 34% 96%;
+  --popover: 213 48% 9%;
+  --popover-foreground: 210 34% 96%;
 
-  --primary: 210 32% 95%;
-  --primary-foreground: 213 62% 12%;
+  --primary: 210 34% 96%;
+  --primary-foreground: 210 65% 12%;
 
-  --accent: 33 100% 58%;
-  --accent-foreground: 213 65% 9%;
+  --accent: 220 88% 56%;
+  --accent-foreground: 0 0% 100%;
 
-  --secondary: 213 36% 15%;
-  --secondary-foreground: 210 32% 95%;
+  --cyan: 188 86% 58%;
+  --gold: 40 92% 64%;
 
-  --muted: 213 34% 15%;
-  --muted-foreground: 213 16% 66%;
+  --secondary: 214 34% 15%;
+  --secondary-foreground: 210 34% 96%;
+
+  --muted: 214 32% 14%;
+  --muted-foreground: 214 18% 68%;
 
   --destructive: 0 68% 58%;
   --destructive-foreground: 0 0% 100%;
   --success: 158 60% 45%;
-  --warning: 33 100% 58%;
+  /* Dark mode lightens --success, so white text on it drops to 2.54:1 —
+     below even the 3:1 floor for large text. Ink on the lighter green
+     reads cleanly, which is what --warning already does. */
+  --success-foreground: 210 65% 11%;
+  --warning: 40 92% 60%;
+  --warning-foreground: 210 65% 12%;
 
-  --border: 213 30% 20%;
-  --input: 213 30% 22%;
-  --ring: 33 100% 58%;
+  --border: 214 28% 19%;
+  --input: 214 28% 21%;
+  --ring: 220 88% 60%;
 
-  --next: 205 88% 58%;
-  --next-deep: 214 84% 44%;
-  --national: 33 100% 58%;
-  --national-deep: 22 88% 50%;
-  --sapphire: 244 76% 66%;
-  --sapphire-deep: 250 66% 46%;
+  --next: 220 90% 64%;
+  --next-deep: 218 84% 46%;
+  --national: 40 92% 62%;
+  --national-deep: 32 88% 52%;
+  --sapphire: 188 86% 58%;
+  --sapphire-deep: 196 80% 42%;
 
-  --shadow-soft: 0 1px 2px hsl(0 0% 0% / 0.30), 0 4px 12px hsl(0 0% 0% / 0.28);
-  --shadow-lift: 0 2px 4px hsl(0 0% 0% / 0.32), 0 12px 32px hsl(0 0% 0% / 0.42);
-  --shadow-float: 0 8px 24px hsl(0 0% 0% / 0.44), 0 24px 64px hsl(0 0% 0% / 0.56);
+  --shadow-soft: 0 1px 2px hsl(0 0% 0% / 0.34), 0 4px 14px hsl(0 0% 0% / 0.32);
+  --shadow-lift: 0 2px 6px hsl(0 0% 0% / 0.36), 0 14px 36px hsl(0 0% 0% / 0.46);
+  --shadow-float: 0 10px 28px hsl(0 0% 0% / 0.48), 0 28px 70px hsl(0 0% 0% / 0.60);
+  --shadow-glow: 0 10px 40px hsl(220 90% 62% / 0.34);
+  --shadow-glow-cyan: 0 10px 40px hsl(188 86% 58% / 0.34);
 }
 
 @theme inline {
@@ -112,6 +146,12 @@
   --color-popover-foreground: hsl(var(--popover-foreground));
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-brand: hsl(var(--brand));
+  --color-brand-foreground: hsl(var(--brand-foreground));
+  --color-ink: hsl(var(--ink));
+  --color-ink-foreground: hsl(var(--ink-foreground));
+  --color-cyan: hsl(var(--cyan));
+  --color-gold: hsl(var(--gold));
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
   --color-muted: hsl(var(--muted));
@@ -148,6 +188,7 @@
   --shadow-lift: var(--shadow-lift);
   --shadow-float: var(--shadow-float);
   --shadow-glow: var(--shadow-glow);
+  --shadow-glow-cyan: var(--shadow-glow-cyan);
 
   --animate-marquee: marquee 38s linear infinite;
   --animate-shimmer: shimmer 2s linear infinite;
@@ -240,14 +281,14 @@
     border: 1px solid hsl(var(--border) / 0.62);
   }
   .glass-dark {
-    background: hsl(213 62% 10% / 0.58);
+    background: hsl(var(--ink) / 0.62);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid hsl(0 0% 100% / 0.10);
   }
 
   .text-gradient-brand {
-    background-image: linear-gradient(115deg, hsl(var(--accent)) 0%, hsl(var(--national-deep)) 55%, hsl(var(--sapphire)) 100%);
+    background-image: linear-gradient(112deg, hsl(var(--accent)) 0%, hsl(var(--cyan)) 52%, hsl(var(--gold)) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -274,6 +315,123 @@
 
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+
+  /* ---------- Redesign: premium surfaces & motion ---------- */
+
+  /* Full-width dark section. Ink ground with two soft brand glows, so the
+     block reads as lit rather than as a flat black rectangle. */
+  .section-ink {
+    position: relative;
+    background-color: hsl(var(--ink));
+    color: hsl(var(--ink-foreground));
+    background-image:
+      radial-gradient(60rem 34rem at 12% -10%, hsl(var(--accent) / 0.22), transparent 60%),
+      radial-gradient(46rem 30rem at 92% 108%, hsl(var(--cyan) / 0.16), transparent 62%);
+  }
+
+  /* The light counterpart: soft white with a barely-there blue wash. */
+  .section-soft {
+    background-image:
+      radial-gradient(52rem 30rem at 8% -8%, hsl(var(--accent) / 0.07), transparent 58%),
+      radial-gradient(44rem 28rem at 96% 6%, hsl(var(--cyan) / 0.06), transparent 60%);
+  }
+
+  .glow-accent { box-shadow: var(--shadow-glow); }
+  .glow-cyan { box-shadow: var(--shadow-glow-cyan); }
+
+  /* Hairline rule that fades out at both ends — used to separate sections
+     without drawing a hard 1px line across the whole viewport. */
+  .rule-fade {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      hsl(var(--border)) 18%,
+      hsl(var(--border)) 82%,
+      transparent
+    );
+  }
+  .rule-fade-bright {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      hsl(var(--accent) / 0.5) 25%,
+      hsl(var(--cyan) / 0.55) 50%,
+      hsl(var(--accent) / 0.5) 75%,
+      transparent
+    );
+  }
+
+  /* Eyebrow label above a section heading. */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--accent));
+  }
+
+  /* Display type. clamp() so headings scale smoothly from 320px up without
+     a pile of breakpoint overrides. */
+  .display-1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 7vw, 6.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+  }
+  .display-2 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4.4vw, 3.75rem);
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+  }
+  .display-3 {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+    line-height: 1.14;
+    letter-spacing: -0.022em;
+    font-weight: 700;
+  }
+
+  /* Marquee: duplicated track translated -50%, so it loops seamlessly.
+     Pure CSS — no JS ticking a transform every frame. */
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 38s linear infinite;
+  }
+  .marquee-slow .marquee-track { animation-duration: 60s; }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+
+  /* Fine dot field for dark sections. */
+  .dot-grid {
+    background-image: radial-gradient(hsl(0 0% 100% / 0.10) 1px, transparent 1px);
+    background-size: 26px 26px;
+  }
+
+  /* Card lift shared by product and collection cards. */
+  .lift {
+    transition:
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .lift:hover { transform: translateY(-8px); box-shadow: var(--shadow-float); }
+
+  /* Arrow nudge on primary CTAs. */
+  .cta-arrow { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+  .group:hover .cta-arrow { transform: translateX(4px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none; }
+    .lift:hover { transform: none; }
+  }
 
   .container-page {
     width: 100%;
