@@ -39,8 +39,8 @@ export function StatsBand({ stats: _stats }: { stats?: StatDTO[] } = {}) {
                 key={idx}
                 className="flex items-center justify-center gap-4 pt-6 md:pt-0 first:pt-0"
               >
-                <div className="grid size-12 shrink-0 place-items-center rounded-lg border border-white/20 bg-white/5 text-white">
-                  <IconComp className="size-6 stroke-[1.5]" />
+                <div className="grid size-14 shrink-0 place-items-center rounded-xl border border-white/20 bg-white/5 text-white shadow-sm">
+                  <IconComp className="size-7 stroke-[1.75]" />
                 </div>
                 <div>
                   <div className="text-2xl sm:text-3xl font-black text-white leading-none">

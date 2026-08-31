@@ -23,18 +23,18 @@ export function Footer() {
               <NextBrandLogo onBrand className="h-9 w-auto" />
             </div>
 
-            <div className="flex items-center gap-3 pt-2 text-slate-400">
+            <div className="flex items-center gap-3.5 pt-2 text-slate-400">
               <a href="#" className="hover:text-white transition-colors" aria-label="Facebook">
-                <Facebook className="size-4" />
+                <Facebook className="size-5" />
               </a>
               <a href="#" className="hover:text-white transition-colors" aria-label="Instagram">
-                <Instagram className="size-4" />
+                <Instagram className="size-5" />
               </a>
               <a href="#" className="hover:text-white transition-colors" aria-label="LinkedIn">
-                <Linkedin className="size-4" />
+                <Linkedin className="size-5" />
               </a>
               <a href="#" className="hover:text-white transition-colors" aria-label="YouTube">
-                <Youtube className="size-4" />
+                <Youtube className="size-5" />
               </a>
             </div>
           </div>
@@ -91,20 +91,20 @@ export function Footer() {
               CONTACT US
             </h3>
             <ul className="space-y-3 text-slate-400">
-              <li className="flex items-start gap-2">
-                <MapPin className="size-4 shrink-0 text-[#c8102e] mt-0.5" />
+              <li className="flex items-start gap-2.5">
+                <MapPin className="size-5 shrink-0 text-[#c8102e] mt-0.5" />
                 <span>Plot No. A/2, Industrial Area, Your City - 000000, India</span>
               </li>
-              <li className="flex items-center gap-2">
-                <Phone className="size-4 shrink-0 text-[#c8102e]" />
+              <li className="flex items-center gap-2.5">
+                <Phone className="size-5 shrink-0 text-[#c8102e]" />
                 <a href="tel:+911234567890" className="hover:text-white transition-colors">+91 12345 67890</a>
               </li>
-              <li className="flex items-center gap-2">
-                <Mail className="size-4 shrink-0 text-[#c8102e]" />
+              <li className="flex items-center gap-2.5">
+                <Mail className="size-5 shrink-0 text-[#c8102e]" />
                 <a href="mailto:info@nppl.com" className="hover:text-white transition-colors">info@nppl.com</a>
               </li>
-              <li className="flex items-center gap-2">
-                <Globe className="size-4 shrink-0 text-[#c8102e]" />
+              <li className="flex items-center gap-2.5">
+                <Globe className="size-5 shrink-0 text-[#c8102e]" />
                 <a href="https://www.nppl.com" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">www.nppl.com</a>
               </li>
             </ul>

@@ -49,11 +49,11 @@ export function Logo({
   /** Only the header instance should preload; the rest are below the fold. */
   priority?: boolean;
 }) {
-  const sizeClass = compact ? "h-8" : "h-10 sm:h-11";
+  const sizeClass = compact ? "h-8 sm:h-9" : "h-11 sm:h-13 xl:h-15";
   const common = "w-auto object-contain";
 
   const mark = (
-    <span className={cn("flex items-center", className)}>
+    <span className="flex items-center shrink-0">
       {onBrand ? (
         <Image
           src={DARK_SRC}
@@ -61,8 +61,8 @@ export function Logo({
           height={LOGO_H}
           alt="National Plasto Pvt. Ltd."
           priority={priority}
-          sizes="220px"
-          className={cn(common, sizeClass)}
+          sizes="260px"
+          className={cn(common, sizeClass, className)}
         />
       ) : (
         <>
@@ -72,8 +72,8 @@ export function Logo({
             height={LOGO_H}
             alt="National Plasto Pvt. Ltd."
             priority={priority}
-            sizes="220px"
-            className={cn(common, sizeClass, "block dark:hidden")}
+            sizes="260px"
+            className={cn(common, sizeClass, "block dark:hidden", className)}
           />
           {/* Decorative duplicate: the alt text above already names the brand,
               so announcing it twice would just be noise for a screen reader. */}
@@ -84,8 +84,8 @@ export function Logo({
             alt=""
             aria-hidden
             priority={priority}
-            sizes="220px"
-            className={cn(common, sizeClass, "hidden dark:block")}
+            sizes="260px"
+            className={cn(common, sizeClass, "hidden dark:block", className)}
           />
         </>
       )}
@@ -118,6 +118,9 @@ export function NextBrandLogo({
   /** True on an always-dark surface. */
   onBrand?: boolean;
 }) {
+  const sizeClass = "h-9 sm:h-11 xl:h-13";
+  const common = "w-auto object-contain shrink-0";
+
   if (onBrand) {
     return (
       <Image
@@ -126,22 +129,22 @@ export function NextBrandLogo({
         height={204}
         alt="NEXT — from the house of National Plasto"
         priority
-        sizes="180px"
-        className={cn("h-9 w-auto object-contain shrink-0", className)}
+        sizes="200px"
+        className={cn(common, sizeClass, className)}
       />
     );
   }
 
   return (
-    <span className={cn("inline-flex items-center shrink-0", className)}>
+    <span className="inline-flex items-center shrink-0">
       <Image
         src={NEXT_LIGHT_SRC}
         width={444}
         height={204}
         alt="NEXT — from the house of National Plasto"
         priority
-        sizes="180px"
-        className="h-full w-auto object-contain shrink-0 block dark:hidden"
+        sizes="200px"
+        className={cn(common, sizeClass, "block dark:hidden", className)}
       />
       <Image
         src={NEXT_DARK_SRC}
@@ -150,8 +153,8 @@ export function NextBrandLogo({
         alt=""
         aria-hidden
         priority
-        sizes="180px"
-        className="h-full w-auto object-contain shrink-0 hidden dark:block"
+        sizes="200px"
+        className={cn(common, sizeClass, "hidden dark:block", className)}
       />
     </span>
   );

@@ -103,7 +103,7 @@ export function Header() {
         <div className="hidden border-b border-slate-200/80 bg-[#f8f9fa] text-[11px] text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 sm:block">
           <div className="container-page flex h-8 items-center justify-between">
             <div className="flex items-center gap-2">
-              <Globe className="size-3 text-slate-500" />
+              <Globe className="size-4 text-slate-500" />
               <span>
                 <strong className="font-semibold text-slate-800 dark:text-slate-200">
                   Welcome to NPPL
@@ -117,28 +117,28 @@ export function Header() {
                 href="tel:+911234567890"
                 className="flex items-center gap-1.5 hover:text-[#c8102e] transition-colors"
               >
-                <Phone className="size-3 text-[#c8102e]" />
+                <Phone className="size-4 text-[#c8102e]" />
                 <span>+91 12345 67890</span>
               </a>
               <a
                 href="mailto:info@nppl.com"
                 className="flex items-center gap-1.5 hover:text-[#c8102e] transition-colors"
               >
-                <Mail className="size-3 text-[#c8102e]" />
+                <Mail className="size-4 text-[#c8102e]" />
                 <span>info@nppl.com</span>
               </a>
               <div className="flex items-center gap-3 text-slate-500">
                 <a href="#" className="hover:text-[#c8102e]" aria-label="Facebook">
-                  <Facebook className="size-3" />
+                  <Facebook className="size-4" />
                 </a>
                 <a href="#" className="hover:text-[#c8102e]" aria-label="Instagram">
-                  <Instagram className="size-3" />
+                  <Instagram className="size-4" />
                 </a>
                 <a href="#" className="hover:text-[#c8102e]" aria-label="LinkedIn">
-                  <Linkedin className="size-3" />
+                  <Linkedin className="size-4" />
                 </a>
                 <a href="#" className="hover:text-[#c8102e]" aria-label="YouTube">
-                  <Youtube className="size-3" />
+                  <Youtube className="size-4" />
                 </a>
               </div>
             </div>
@@ -157,14 +157,14 @@ export function Header() {
           <div
             className={cn(
               "container-page flex items-center justify-between transition-[height] duration-300",
-              scrolled ? "h-16" : "h-20",
+              scrolled ? "h-16 sm:h-18" : "h-20 sm:h-24",
             )}
           >
             {/* Dual Brand Logos */}
-            <div className="flex shrink-0 items-center gap-3 xl:gap-4">
-              <Logo compact={false} priority className="h-8 sm:h-9 xl:h-10 w-auto shrink-0" />
-              <div className="hidden h-7 w-px bg-slate-200 dark:bg-slate-800 sm:block shrink-0" />
-              <NextBrandLogo className="hidden sm:block h-7 sm:h-8 xl:h-9 w-auto shrink-0" />
+            <div className="flex shrink-0 items-center gap-3.5 xl:gap-5">
+              <Logo compact={false} priority className="h-10 sm:h-13 xl:h-15" />
+              <div className="hidden h-8 sm:h-10 w-px bg-slate-200 dark:bg-slate-800 sm:block shrink-0" />
+              <NextBrandLogo className="hidden sm:inline-flex h-9 sm:h-11 xl:h-13" />
             </div>
 
             {/* Desktop Navigation Links */}
@@ -182,7 +182,7 @@ export function Header() {
                   >
                     {item.label}
                     {item.label === "PRODUCTS" && (
-                      <ChevronDown className="size-3.5 opacity-75 shrink-0" />
+                      <ChevronDown className="size-4 opacity-75 shrink-0" />
                     )}
                   </Link>
                   {isActive(item.href) && (
@@ -197,33 +197,33 @@ export function Header() {
             </nav>
 
             {/* Header Right Actions */}
-            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5 ml-auto">
+            <div className="flex shrink-0 items-center gap-2 sm:gap-3 ml-auto">
               <button
                 onClick={() => setSearchOpen(true)}
-                className={iconButton}
+                className={cn(iconButton, "size-10")}
                 aria-label="Search products"
               >
-                <Search className="size-4" />
+                <Search className="size-5" />
               </button>
 
               <ThemeToggle inverted={overlay} />
 
               <Link
                 href="/wishlist"
-                className={cn(iconButton, "hidden sm:grid")}
+                className={cn(iconButton, "size-10 hidden sm:grid")}
                 aria-label={`Wishlist${mounted && wishlistCount ? `, ${wishlistCount} items` : ""}`}
               >
-                <Heart className="size-4" />
+                <Heart className="size-5" />
                 <CountBadge count={mounted ? wishlistCount : 0} className="bg-rose-500" />
               </Link>
 
               <button
                 type="button"
                 onClick={() => openCart(true)}
-                className={iconButton}
+                className={cn(iconButton, "size-10")}
                 aria-label={`Open cart${mounted && cartCount ? `, ${cartCount} items` : ""}`}
               >
-                <ShoppingBag className="size-4" />
+                <ShoppingBag className="size-5" />
                 <CountBadge count={mounted ? cartCount : 0} className="bg-accent text-accent-foreground" />
               </button>
 

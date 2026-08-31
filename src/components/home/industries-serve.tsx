@@ -62,8 +62,8 @@ export function IndustriesServe() {
                   </div>
 
                   {/* Overlapping White Circle Icon */}
-                  <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 grid size-10 place-items-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-md transition-transform duration-300 group-hover:scale-110 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
-                    <IconComponent className="size-5 text-[#c8102e] dark:text-red-400" />
+                  <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 grid size-12 place-items-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-md transition-transform duration-300 group-hover:scale-110 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                    <IconComponent className="size-6 text-[#c8102e] dark:text-red-400" />
                   </div>
                 </div>
 

@@ -36,7 +36,7 @@ const FEATURES = [
 
 export function FeatureBar() {
   return (
-    <section className="relative z-10 -mt-6 sm:-mt-8 pb-12">
+    <section className="relative z-10 mt-6 sm:mt-10 pb-12 lg:pb-16">
       <div className="container-page">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((item, idx) => {
@@ -47,9 +47,9 @@ export function FeatureBar() {
                 className="flex items-start gap-4 rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
               >
                 <div
-                  className={`grid size-11 shrink-0 place-items-center rounded-full ${item.bg}`}
+                  className={`grid size-13 shrink-0 place-items-center rounded-full ${item.bg}`}
                 >
-                  <IconComponent className="size-5" />
+                  <IconComponent className="size-6 sm:size-7" />
                 </div>
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-[#0b2545] dark:text-slate-100">
@@ -67,4 +67,3 @@ export function FeatureBar() {
     </section>
   );
 }
-
