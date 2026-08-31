@@ -93,19 +93,19 @@ export function Footer() {
             <ul className="space-y-3 text-slate-400">
               <li className="flex items-start gap-2.5">
                 <MapPin className="size-5 shrink-0 text-[#c8102e] mt-0.5" />
-                <span>Plot No. A/2, Industrial Area, Your City - 000000, India</span>
+                <span>19 Sukeas Lane, Kolkata, West Bengal, India, 700001</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone className="size-5 shrink-0 text-[#c8102e]" />
-                <a href="tel:+911234567890" className="hover:text-white transition-colors">+91 12345 67890</a>
+                <a href="tel:+919830012345" className="hover:text-white transition-colors">+91 98300 12345</a>
               </li>
               <li className="flex items-center gap-2.5">
                 <Mail className="size-5 shrink-0 text-[#c8102e]" />
-                <a href="mailto:info@nppl.com" className="hover:text-white transition-colors">info@nppl.com</a>
+                <a href="mailto:info@nationalplasto.com" className="hover:text-white transition-colors">info@nationalplasto.com</a>
               </li>
               <li className="flex items-center gap-2.5">
                 <Globe className="size-5 shrink-0 text-[#c8102e]" />
-                <a href="https://www.nppl.com" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">www.nppl.com</a>
+                <a href="https://www.nationalplasto.com" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">www.nationalplasto.com</a>
               </li>
             </ul>
           </div>

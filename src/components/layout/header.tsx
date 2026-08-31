@@ -113,19 +113,13 @@ export function Header() {
               </span>
             </div>
             <div className="flex items-center gap-6">
-              <a
-                href="tel:+911234567890"
-                className="flex items-center gap-1.5 hover:text-[#c8102e] transition-colors"
-              >
+              <a href="tel:+919830012345" className="flex items-center gap-1.5 transition-colors hover:text-[#c8102e]">
                 <Phone className="size-4 text-[#c8102e]" />
-                <span>+91 12345 67890</span>
+                <span>+91 98300 12345</span>
               </a>
-              <a
-                href="mailto:info@nppl.com"
-                className="flex items-center gap-1.5 hover:text-[#c8102e] transition-colors"
-              >
+              <a href="mailto:info@nationalplasto.com" className="flex items-center gap-1.5 transition-colors hover:text-[#c8102e]">
                 <Mail className="size-4 text-[#c8102e]" />
-                <span>info@nppl.com</span>
+                <span>info@nationalplasto.com</span>
               </a>
               <div className="flex items-center gap-3 text-slate-500">
                 <a href="#" className="hover:text-[#c8102e]" aria-label="Facebook">
@@ -385,7 +379,11 @@ function MobileMenu({
             aria-label="Mobile"
           >
             <div className="flex items-center justify-between border-b border-border p-5">
-              <Logo />
+              <div className="flex items-center gap-3">
+                <Logo compact className="h-8" />
+                <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 shrink-0" />
+                <NextBrandLogo className="h-7" />
+              </div>
             </div>
 
             <motion.ul

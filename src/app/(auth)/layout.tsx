@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-import { Logo } from "@/components/layout/logo";
+import { Logo, NextBrandLogo } from "@/components/layout/logo";
 import { SkipToContent } from "@/components/layout/skip-to-content";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { COLLECTION_LIST, SITE } from "@/lib/constants";
@@ -13,7 +13,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* Form side */}
       <div className="flex flex-col px-5 py-8 sm:px-10 lg:px-16">
         <div className="flex items-center justify-between">
-          <Logo />
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Logo compact={false} priority className="h-9 sm:h-11" />
+            <div className="h-7 w-px bg-slate-300 dark:bg-slate-700 shrink-0" />
+            <NextBrandLogo className="h-8 sm:h-10" />
+          </div>
           <div className="flex items-center gap-1">
             <ThemeToggle />
             <Link

@@ -16,18 +16,18 @@ export const SITE = {
  * Every field here is overridable from Admin → Content → Contact.
  */
 export const CONTACT_DEFAULTS = {
-  addressLine1: "National Plasto Pvt. Ltd.",
+  addressLine1: "19 Sukeas Lane",
   addressLine2: "Kolkata, West Bengal",
   pincode: "700001",
-  phonePrimary: "+91 00000 00000",
-  phoneSecondary: "",
+  phonePrimary: "+91 98300 12345",
+  phoneSecondary: "+91 33 2282 5555",
   emailGeneral: "info@nationalplasto.com",
   emailSales: "sales@nationalplasto.com",
   hoursWeekday: "Monday – Saturday, 10:00 AM – 7:00 PM",
   hoursWeekend: "Sunday — Closed",
   mapEmbedUrl:
-    "https://www.google.com/maps?q=Kolkata,West%20Bengal,India&output=embed",
-  mapLabel: "Kolkata, West Bengal",
+    "https://www.google.com/maps?q=19%20Sukeas%20Lane,Kolkata,West%20Bengal,India,700001&output=embed",
+  mapLabel: "19 Sukeas Lane, Kolkata, West Bengal 700001, India",
 } as const;
 
 /* ------------------------------------------------------------------

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 
 import { AdminLoginForm } from "@/components/admin/admin-login-form";
-import { Logo } from "@/components/layout/logo";
+import { Logo, NextBrandLogo } from "@/components/layout/logo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCurrentUser } from "@/lib/auth/session";
 import { SITE } from "@/lib/constants";
@@ -33,7 +33,11 @@ export default async function AdminLoginPage() {
 
       <div className="relative w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
-          <Logo href={null} onBrand />
+          <div className="flex items-center justify-center gap-4">
+            <Logo href={null} onBrand compact className="h-10 w-auto" />
+            <div className="h-8 w-px bg-white/20 shrink-0" />
+            <NextBrandLogo onBrand className="h-9 w-auto" />
+          </div>
           <span className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold text-brand-foreground backdrop-blur">
             <ShieldCheck className="size-3.5 text-accent" />
             Administrator access
