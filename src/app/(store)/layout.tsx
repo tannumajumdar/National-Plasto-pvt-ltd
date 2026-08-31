@@ -25,7 +25,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
           homepage hero cancels it with -mt-20 so it can paint behind the bar;
           every other page simply starts underneath it.
         */}
-        <main id="main-content" tabIndex={-1} className="flex-1 pt-20">
+        <main id="main-content" tabIndex={-1} className="flex-1 pt-20 sm:pt-28">
           <PageTransition>{children}</PageTransition>
         </main>
         <CartDrawer />

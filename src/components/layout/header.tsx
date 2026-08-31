@@ -5,15 +5,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowRight,
+  ChevronDown,
   ChevronRight,
+  Facebook,
+  Globe,
   Heart,
+  Instagram,
   LayoutDashboard,
+  Linkedin,
   LogOut,
+  Mail,
   MapPin,
   Package,
+  Phone,
   Search,
   ShoppingBag,
   User as UserIcon,
+  Youtube,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -25,7 +34,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Logo } from "@/components/layout/logo";
+import { Logo, NextBrandLogo } from "@/components/layout/logo";
 import { ThemeToggle, ThemeToggleButton } from "@/components/layout/theme-toggle";
 import { SearchOverlay } from "@/components/layout/search-overlay";
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
@@ -78,14 +87,10 @@ export function Header() {
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-  // The bar only floats over artwork on the homepage, whose hero is ink-dark
-  // and pulls itself up under the header. Everywhere else the page starts
-  // below the bar, so it must stay legible from the first frame.
   const overlay = pathname === "/" && !scrolled;
 
-  // Shared classes for the icon buttons, which have to read on both grounds.
   const iconButton = cn(
-    "relative grid size-10 place-items-center rounded-full transition-colors",
+    "relative grid size-9 place-items-center rounded-full transition-colors",
     overlay
       ? "text-white/75 hover:bg-white/10 hover:text-white"
       : "text-muted-foreground hover:bg-secondary hover:text-foreground",
@@ -93,194 +98,230 @@ export function Header() {
 
   return (
     <>
-      {/*
-        Fixed, not sticky, so the hero can paint behind it. <main> in the store
-        layout reserves the unscrolled height (pt-20) and the hero pulls itself
-        back up with -mt-20 — every other page just starts below the bar.
-
-        Unscrolled it is fully transparent and sits over the dark hero, so the
-        controls render in `onDark` colours; once scrolled it becomes glass and
-        switches back to normal foreground colours.
-      */}
-      <motion.header
-        className={cn(
-          "fixed inset-x-0 top-0 z-50 w-full transition-[background-color,box-shadow,border-color] duration-300",
-          scrolled
-            ? "glass border-b border-border shadow-soft"
-            : "border-b border-transparent bg-transparent",
-        )}
-      >
-        <div
-          className={cn(
-            "container-page flex items-center gap-4 transition-[height] duration-300",
-            scrolled ? "h-16" : "h-20",
-          )}
-        >
-          <Logo compact={false} priority onBrand={overlay} className="hidden sm:flex" />
-          <Logo compact priority onBrand={overlay} className="sm:hidden" />
-
-          {/* Desktop navigation */}
-          <nav className="ml-6 hidden items-center gap-7 lg:flex" aria-label="Main">
-            {MAIN_NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "group relative py-1.5 text-sm font-medium transition-colors",
-                  overlay
-                    ? isActive(item.href)
-                      ? "text-white"
-                      : "text-white/65 hover:text-white"
-                    : isActive(item.href)
-                      ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {item.label}
-                {/* Underline: grows from the left on hover, and stays put on
-                    the active route via a shared layoutId. */}
-                <span
-                  aria-hidden
-                  className={cn(
-                    "absolute -bottom-0.5 left-0 h-0.5 w-full origin-left scale-x-0 rounded-full transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100",
-                    overlay ? "bg-cyan" : "bg-accent",
-                  )}
-                />
-                {isActive(item.href) && (
-                  <motion.span
-                    layoutId="nav-underline"
-                    className={cn(
-                      "absolute -bottom-0.5 left-0 h-0.5 w-full rounded-full",
-                      overlay ? "bg-cyan" : "bg-accent",
-                    )}
-                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                  />
-                )}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="ml-auto flex items-center gap-1">
-            <button
-              onClick={() => setSearchOpen(true)}
-              className={iconButton}
-              aria-label="Search products"
-            >
-              <Search className="size-5" />
-            </button>
-
-            <ThemeToggle inverted={overlay} />
-
-            <Link
-              href="/wishlist"
-              className={cn(iconButton, "hidden sm:grid")}
-              aria-label={`Wishlist${mounted && wishlistCount ? `, ${wishlistCount} items` : ""}`}
-            >
-              <Heart className="size-5" />
-              <CountBadge count={mounted ? wishlistCount : 0} className="bg-rose-500" />
-            </Link>
-
-            <button
-              type="button"
-              onClick={() => openCart(true)}
-              className={iconButton}
-              aria-label={`Open cart${mounted && cartCount ? `, ${cartCount} items` : ""}`}
-            >
-              <ShoppingBag className="size-5" />
-              <CountBadge count={mounted ? cartCount : 0} className="bg-accent text-accent-foreground" />
-            </button>
-
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className={cn(
-                      "ml-1 grid size-10 place-items-center rounded-full text-xs font-bold transition-transform hover:scale-105",
-                      overlay
-                        ? "bg-white/12 text-white ring-1 ring-white/20 backdrop-blur-md"
-                        : "bg-primary text-primary-foreground",
-                    )}
-                    aria-label="Account menu"
-                  >
-                    {initials(user.name)}
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel className="normal-case">
-                    <span className="block text-sm font-semibold text-foreground">{user.name}</span>
-                    <span className="block truncate text-xs font-normal text-muted-foreground">
-                      {user.email}
-                    </span>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/account"><UserIcon />My Profile</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/account/orders"><Package />My Orders</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/wishlist"><Heart />Wishlist</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/account/addresses"><MapPin />Addresses</Link>
-                  </DropdownMenuItem>
-                  {user.role === "ADMIN" && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin"><LayoutDashboard />Admin Dashboard</Link>
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild destructive>
-                    <a href="/api/auth/logout"><LogOut />Sign out</a>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button
-                asChild
-                size="sm"
-                variant={overlay ? "onDark" : "accent"}
-                className="ml-2 hidden sm:inline-flex"
-              >
-                <Link href="/login">Login</Link>
-              </Button>
-            )}
-
-            {/* Animated hamburger */}
-            <button
-              onClick={() => setMenuOpen((v) => !v)}
-              className={cn(
-                "ml-1 grid size-10 place-items-center rounded-full transition-colors lg:hidden",
-                overlay ? "hover:bg-white/10" : "hover:bg-secondary",
-              )}
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={menuOpen}
-            >
-              <span className="flex w-5 flex-col items-end gap-[5px]">
-                <motion.span
-                  className={cn("block h-0.5 w-full rounded-full", overlay ? "bg-white" : "bg-foreground")}
-                  animate={menuOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
-                  transition={{ duration: 0.3, ease: EASE }}
-                />
-                <motion.span
-                  className={cn("block h-0.5 w-3/4 rounded-full", overlay ? "bg-white" : "bg-foreground")}
-                  animate={menuOpen ? { opacity: 0, x: 8 } : { opacity: 1, x: 0 }}
-                  transition={{ duration: 0.2 }}
-                />
-                <motion.span
-                  className={cn("block h-0.5 w-full rounded-full", overlay ? "bg-white" : "bg-foreground")}
-                  animate={menuOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
-                  transition={{ duration: 0.3, ease: EASE }}
-                />
+      <header className="fixed inset-x-0 top-0 z-50 w-full">
+        {/* Top Info / Announcement Bar */}
+        <div className="hidden border-b border-slate-200/80 bg-[#f8f9fa] text-[11px] text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 sm:block">
+          <div className="container-page flex h-8 items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Globe className="size-3 text-slate-500" />
+              <span>
+                <strong className="font-semibold text-slate-800 dark:text-slate-200">
+                  Welcome to NPPL
+                </strong>{" "}
+                <span className="mx-1 text-slate-300">|</span> Excellence in
+                Plastic Moulded Products
               </span>
-            </button>
+            </div>
+            <div className="flex items-center gap-6">
+              <a
+                href="tel:+911234567890"
+                className="flex items-center gap-1.5 hover:text-[#c8102e] transition-colors"
+              >
+                <Phone className="size-3 text-[#c8102e]" />
+                <span>+91 12345 67890</span>
+              </a>
+              <a
+                href="mailto:info@nppl.com"
+                className="flex items-center gap-1.5 hover:text-[#c8102e] transition-colors"
+              >
+                <Mail className="size-3 text-[#c8102e]" />
+                <span>info@nppl.com</span>
+              </a>
+              <div className="flex items-center gap-3 text-slate-500">
+                <a href="#" className="hover:text-[#c8102e]" aria-label="Facebook">
+                  <Facebook className="size-3" />
+                </a>
+                <a href="#" className="hover:text-[#c8102e]" aria-label="Instagram">
+                  <Instagram className="size-3" />
+                </a>
+                <a href="#" className="hover:text-[#c8102e]" aria-label="LinkedIn">
+                  <Linkedin className="size-3" />
+                </a>
+                <a href="#" className="hover:text-[#c8102e]" aria-label="YouTube">
+                  <Youtube className="size-3" />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
-      </motion.header>
+
+        {/* Main Nav Header */}
+        <div
+          className={cn(
+            "w-full transition-[background-color,box-shadow,border-color] duration-300",
+            scrolled
+              ? "glass border-b border-border shadow-soft"
+              : "border-b border-slate-200/60 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95",
+          )}
+        >
+          <div
+            className={cn(
+              "container-page flex items-center justify-between transition-[height] duration-300",
+              scrolled ? "h-16" : "h-20",
+            )}
+          >
+            {/* Dual Brand Logos */}
+            <div className="flex shrink-0 items-center gap-3 xl:gap-4">
+              <Logo compact={false} priority className="h-8 sm:h-9 xl:h-10 w-auto shrink-0" />
+              <div className="hidden h-7 w-px bg-slate-200 dark:bg-slate-800 sm:block shrink-0" />
+              <NextBrandLogo className="hidden sm:block h-7 sm:h-8 xl:h-9 w-auto shrink-0" />
+            </div>
+
+            {/* Desktop Navigation Links */}
+            <nav className="hidden items-center gap-3 lg:gap-4.5 xl:gap-7 lg:flex shrink-0 whitespace-nowrap ml-6 lg:ml-8 xl:ml-12" aria-label="Main">
+              {MAIN_NAV.map((item) => (
+                <div key={item.href} className="relative group shrink-0">
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-1 py-1.5 text-xs xl:text-[13px] font-bold tracking-wider uppercase transition-colors whitespace-nowrap",
+                      isActive(item.href)
+                        ? "text-[#c8102e]"
+                        : "text-slate-700 hover:text-[#c8102e] dark:text-slate-200 dark:hover:text-[#c8102e]",
+                    )}
+                  >
+                    {item.label}
+                    {item.label === "PRODUCTS" && (
+                      <ChevronDown className="size-3.5 opacity-75 shrink-0" />
+                    )}
+                  </Link>
+                  {isActive(item.href) && (
+                    <motion.span
+                      layoutId="nav-underline"
+                      className="absolute -bottom-1 left-0 h-0.5 w-full bg-[#c8102e] rounded-full"
+                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    />
+                  )}
+                </div>
+              ))}
+            </nav>
+
+            {/* Header Right Actions */}
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5 ml-auto">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className={iconButton}
+                aria-label="Search products"
+              >
+                <Search className="size-4" />
+              </button>
+
+              <ThemeToggle inverted={overlay} />
+
+              <Link
+                href="/wishlist"
+                className={cn(iconButton, "hidden sm:grid")}
+                aria-label={`Wishlist${mounted && wishlistCount ? `, ${wishlistCount} items` : ""}`}
+              >
+                <Heart className="size-4" />
+                <CountBadge count={mounted ? wishlistCount : 0} className="bg-rose-500" />
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => openCart(true)}
+                className={iconButton}
+                aria-label={`Open cart${mounted && cartCount ? `, ${cartCount} items` : ""}`}
+              >
+                <ShoppingBag className="size-4" />
+                <CountBadge count={mounted ? cartCount : 0} className="bg-accent text-accent-foreground" />
+              </button>
+
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="ml-1 grid size-9 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground transition-transform hover:scale-105"
+                      aria-label="Account menu"
+                    >
+                      {initials(user.name)}
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel className="normal-case">
+                      <span className="block text-sm font-semibold text-foreground">{user.name}</span>
+                      <span className="block truncate text-xs font-normal text-muted-foreground">
+                        {user.email}
+                      </span>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/account"><UserIcon />My Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/account/orders"><Package />My Orders</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/wishlist"><Heart />Wishlist</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/account/addresses"><MapPin />Addresses</Link>
+                    </DropdownMenuItem>
+                    {user.role === "ADMIN" && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin"><LayoutDashboard />Admin Dashboard</Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild destructive>
+                      <a href="/api/auth/logout"><LogOut />Sign out</a>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="ml-1 hidden sm:inline-flex border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs uppercase tracking-wider"
+                >
+                  <Link href="/login">Login</Link>
+                </Button>
+              )}
+
+              {/* Get a Quote Red Button */}
+              <Button
+                asChild
+                className="ml-2 bg-[#c8102e] hover:bg-[#a80b24] text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-full shadow-sm"
+              >
+                <Link href="/contact">
+                  GET A QUOTE
+                  <ArrowRight className="ml-1 size-3.5" />
+                </Link>
+              </Button>
+
+              {/* Mobile hamburger */}
+              <button
+                onClick={() => setMenuOpen((v) => !v)}
+                className="ml-1 grid size-9 place-items-center rounded-full transition-colors hover:bg-secondary lg:hidden"
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={menuOpen}
+              >
+                <span className="flex w-5 flex-col items-end gap-[5px]">
+                  <motion.span
+                    className="block h-0.5 w-full rounded-full bg-foreground"
+                    animate={menuOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
+                    transition={{ duration: 0.3, ease: EASE }}
+                  />
+                  <motion.span
+                    className="block h-0.5 w-3/4 rounded-full bg-foreground"
+                    animate={menuOpen ? { opacity: 0, x: 8 } : { opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                  <motion.span
+                    className="block h-0.5 w-full rounded-full bg-foreground"
+                    animate={menuOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
+                    transition={{ duration: 0.3, ease: EASE }}
+                  />
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
 
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} user={user} />
       <SearchOverlay open={searchOpen} onOpenChange={setSearchOpen} />

@@ -1,63 +1,61 @@
 "use client";
 
+import React from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowRight, Compass, Factory, Target } from "lucide-react";
-
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EASE, Reveal } from "@/components/animations/motion-primitives";
-import type { AboutContent } from "@/types";
 
-export function AboutTeaser({ content }: { content: AboutContent }) {
-  const pillars = [
-    { icon: Factory, label: "Manufacturing", body: content.quality },
-    { icon: Compass, label: "Our vision", body: content.vision },
-    { icon: Target, label: "Our mission", body: content.mission },
-  ];
-
+export function AboutTeaser() {
   return (
-    <section className="container-page py-20 sm:py-28">
-      <div className="grid items-start gap-14 lg:grid-cols-2 lg:gap-20">
-        <Reveal>
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-accent">
-            About National Plasto
-          </span>
-          <h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-[2.75rem]">
-            {content.heading}
-          </h2>
-          <p className="mt-6 text-base leading-relaxed text-muted-foreground">{content.intro}</p>
+    <section className="py-14 lg:py-20 overflow-hidden bg-white dark:bg-slate-950">
+      <div className="container-page">
+        <div className="grid items-center gap-10 lg:grid-cols-12">
+          {/* Left Text */}
+          <div className="lg:col-span-5">
+            <span className="block text-xs font-bold uppercase tracking-widest text-[#c8102e]">
+              ABOUT NPPL
+            </span>
 
-          <Button asChild variant="outline" size="lg" className="group mt-8">
-            <Link href="/about">
-              Read our story
-              <ArrowRight className="transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
-          </Button>
-        </Reveal>
+            <h2 className="mt-2 text-3xl font-extrabold leading-tight text-[#0b2545] sm:text-4xl dark:text-slate-100">
+              Shaping Ideas.<br />
+              <span className="text-[#c8102e]">Moulding Excellence.</span>
+            </h2>
 
-        <div className="space-y-4">
-          {pillars.map((pillar, i) => (
-            <motion.div
-              key={pillar.label}
-              initial={{ opacity: 0, x: 32 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{ duration: 0.6, delay: i * 0.12, ease: EASE }}
-              className="group flex gap-5 rounded-2xl border border-border bg-card p-6 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
-            >
-              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-accent/18 to-accent/5 text-accent transition-transform duration-300 group-hover:scale-110">
-                <pillar.icon className="size-6" />
-              </span>
-              <span>
-                <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  {pillar.label}
-                </span>
-                <span className="mt-2 block text-sm leading-relaxed text-foreground/85">
-                  {pillar.body}
-                </span>
-              </span>
-            </motion.div>
-          ))}
+            <p className="mt-5 text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300">
+              National Plastic Moulded Products Limited (NPPL) is a trusted name
+              in the plastic moulding industry. With decades of expertise, we
+              deliver innovative and customized solutions that meet global
+              standards.
+            </p>
+
+            <div className="mt-8">
+              <Button
+                asChild
+                className="bg-[#c8102e] hover:bg-[#a80b24] text-white font-bold text-xs uppercase tracking-wider px-7 py-3 rounded-full shadow-md"
+              >
+                <Link href="/about">
+                  KNOW MORE
+                  <ArrowRight className="ml-2 size-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* Right Image with diagonal left edge */}
+          <div className="lg:col-span-7 flex justify-center lg:justify-end">
+            <div className="relative w-full max-w-2xl overflow-hidden rounded-xl shadow-xl">
+              <div className="relative aspect-[16/9] w-full">
+                <Image
+                  src="/images/home/about-building.jpg"
+                  alt="NPPL Factory Building — Shaping Ideas, Moulding Excellence"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 55vw"
+                  className="object-cover"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

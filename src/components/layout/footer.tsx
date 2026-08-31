@@ -1,126 +1,124 @@
 import Link from "next/link";
-import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import {
+  Facebook,
+  Globe,
+  Instagram,
+  Linkedin,
+  Mail,
+  MapPin,
+  Phone,
+  Youtube,
+} from "lucide-react";
+import { Logo, NextBrandLogo } from "@/components/layout/logo";
 
-import { Logo } from "@/components/layout/logo";
-import { Separator } from "@/components/ui/separator";
-import { COLLECTION_LIST, MAIN_NAV, SITE } from "@/lib/constants";
-import { getContact } from "@/lib/queries/content";
-
-export async function Footer() {
-  const contact = await getContact();
-  const year = new Date().getFullYear();
-
+export function Footer() {
   return (
-    <footer className="section-ink relative mt-24 overflow-hidden pb-16 lg:pb-0">
-      {/* Animated gradient hairline across the top edge. */}
-      <div aria-hidden className="absolute inset-x-0 top-0 h-px overflow-hidden">
-        <div className="marquee-track h-px w-[200%] bg-[linear-gradient(90deg,transparent,hsl(var(--accent)),hsl(var(--cyan)),hsl(var(--gold)),transparent)] opacity-70" />
-      </div>
-      <div aria-hidden className="pointer-events-none absolute inset-0 dot-grid opacity-30" />
+    <footer className="bg-[#07172b] text-slate-300 text-xs">
+      <div className="container-page py-12 lg:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-6">
+          {/* Column 1: Logo & Social */}
+          <div className="space-y-4 lg:col-span-1">
+            <div className="space-y-3">
+              <Logo onBrand compact={false} />
+              <NextBrandLogo onBrand className="h-9 w-auto" />
+            </div>
 
-      <div className="container-page relative py-16">
-        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
-          {/* Brand */}
-          <div>
-            <Logo onBrand />
-            <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/65">
-              {SITE.description}
-            </p>
+            <div className="flex items-center gap-3 pt-2 text-slate-400">
+              <a href="#" className="hover:text-white transition-colors" aria-label="Facebook">
+                <Facebook className="size-4" />
+              </a>
+              <a href="#" className="hover:text-white transition-colors" aria-label="Instagram">
+                <Instagram className="size-4" />
+              </a>
+              <a href="#" className="hover:text-white transition-colors" aria-label="LinkedIn">
+                <Linkedin className="size-4" />
+              </a>
+              <a href="#" className="hover:text-white transition-colors" aria-label="YouTube">
+                <Youtube className="size-4" />
+              </a>
+            </div>
           </div>
 
-          {/* Explore */}
-          <nav aria-label="Footer navigation">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-white">
-              Explore
-            </h2>
-            <ul className="mt-5 space-y-3">
-              {MAIN_NAV.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className="text-sm text-white/65 transition-colors hover:text-accent"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-              <li>
-                <Link
-                  href="/products?sort=newest"
-                  className="text-sm text-white/65 transition-colors hover:text-accent"
-                >
-                  New Arrivals
-                </Link>
-              </li>
-            </ul>
-          </nav>
-
-          {/* Collections */}
-          <nav aria-label="Collections">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-white">
-              Collections
-            </h2>
-            <ul className="mt-5 space-y-3">
-              {COLLECTION_LIST.map((c) => (
-                <li key={c.slug}>
-                  <Link
-                    href={`/collections/${c.slug}`}
-                    className="text-sm text-white/65 transition-colors hover:text-accent"
-                  >
-                    {c.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          {/* Contact */}
+          {/* Column 2: Quick Links */}
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-white">
-              Get in touch
-            </h2>
-            <ul className="mt-5 space-y-4 text-sm text-white/65">
-              <li className="flex gap-3">
-                <MapPin className="mt-0.5 size-4 shrink-0 text-accent" />
-                <span>
-                  {contact.addressLine1}
-                  <br />
-                  {contact.addressLine2} {contact.pincode}
-                </span>
+            <h3 className="font-bold text-white uppercase tracking-wider mb-4 text-xs border-b border-white/10 pb-2">
+              QUICK LINKS
+            </h3>
+            <ul className="space-y-2 text-slate-400">
+              <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
+              <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
+              <li><Link href="/products" className="hover:text-white transition-colors">Products</Link></li>
+              <li><Link href="/#industries" className="hover:text-white transition-colors">Industries</Link></li>
+              <li><Link href="/about#quality" className="hover:text-white transition-colors">Quality</Link></li>
+              <li><Link href="/about#infrastructure" className="hover:text-white transition-colors">Infrastructure</Link></li>
+              <li><Link href="/about#careers" className="hover:text-white transition-colors">Careers</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
+            </ul>
+          </div>
+
+          {/* Column 3: Products */}
+          <div>
+            <h3 className="font-bold text-white uppercase tracking-wider mb-4 text-xs border-b border-white/10 pb-2">
+              PRODUCTS
+            </h3>
+            <ul className="space-y-2 text-slate-400">
+              <li><Link href="/products?category=furniture" className="hover:text-white transition-colors">Furniture</Link></li>
+              <li><Link href="/products?category=crates" className="hover:text-white transition-colors">Crates & Bins</Link></li>
+              <li><Link href="/products?category=household" className="hover:text-white transition-colors">Household Products</Link></li>
+              <li><Link href="/products?category=industrial" className="hover:text-white transition-colors">Industrial Components</Link></li>
+              <li><Link href="/products?category=pallets" className="hover:text-white transition-colors">Pallets</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition-colors">Custom Moulding</Link></li>
+            </ul>
+          </div>
+
+          {/* Column 4: Industries */}
+          <div>
+            <h3 className="font-bold text-white uppercase tracking-wider mb-4 text-xs border-b border-white/10 pb-2">
+              INDUSTRIES
+            </h3>
+            <ul className="space-y-2 text-slate-400">
+              <li><Link href="/#industries" className="hover:text-white transition-colors">Home & Furniture</Link></li>
+              <li><Link href="/#industries" className="hover:text-white transition-colors">Logistics & Storage</Link></li>
+              <li><Link href="/#industries" className="hover:text-white transition-colors">Automotive</Link></li>
+              <li><Link href="/#industries" className="hover:text-white transition-colors">Retail & Distribution</Link></li>
+              <li><Link href="/#industries" className="hover:text-white transition-colors">Agriculture</Link></li>
+            </ul>
+          </div>
+
+          {/* Column 5: Contact Us */}
+          <div>
+            <h3 className="font-bold text-white uppercase tracking-wider mb-4 text-xs border-b border-white/10 pb-2">
+              CONTACT US
+            </h3>
+            <ul className="space-y-3 text-slate-400">
+              <li className="flex items-start gap-2">
+                <MapPin className="size-4 shrink-0 text-[#c8102e] mt-0.5" />
+                <span>Plot No. A/2, Industrial Area, Your City - 000000, India</span>
               </li>
-              <li className="flex gap-3">
-                <Phone className="mt-0.5 size-4 shrink-0 text-accent" />
-                <a href={`tel:${contact.phonePrimary.replace(/\s/g, "")}`} className="hover:text-accent">
-                  {contact.phonePrimary}
-                </a>
+              <li className="flex items-center gap-2">
+                <Phone className="size-4 shrink-0 text-[#c8102e]" />
+                <a href="tel:+911234567890" className="hover:text-white transition-colors">+91 12345 67890</a>
               </li>
-              <li className="flex gap-3">
-                <Mail className="mt-0.5 size-4 shrink-0 text-accent" />
-                <a href={`mailto:${contact.emailGeneral}`} className="break-all hover:text-accent">
-                  {contact.emailGeneral}
-                </a>
+              <li className="flex items-center gap-2">
+                <Mail className="size-4 shrink-0 text-[#c8102e]" />
+                <a href="mailto:info@nppl.com" className="hover:text-white transition-colors">info@nppl.com</a>
               </li>
-              <li className="flex gap-3">
-                <Clock className="mt-0.5 size-4 shrink-0 text-accent" />
-                <span>
-                  {contact.hoursWeekday}
-                  <br />
-                  {contact.hoursWeekend}
-                </span>
+              <li className="flex items-center gap-2">
+                <Globe className="size-4 shrink-0 text-[#c8102e]" />
+                <a href="https://www.nppl.com" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">www.nppl.com</a>
               </li>
             </ul>
           </div>
         </div>
 
-        <Separator className="my-10 bg-white/12" />
-
-        <div className="flex flex-col items-center justify-between gap-4 text-xs text-white/55 sm:flex-row">
-          <p>
-            © {year} {SITE.legalName}. All rights reserved.
-          </p>
-          <p>
-            {SITE.city}, {SITE.state}, {SITE.country}
-          </p>
+        {/* Bottom Bar */}
+        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
+          <p>© 2025 National Plastic Moulded Products Limited. All Rights Reserved.</p>
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <span>|</span>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms & Conditions</Link>
+          </div>
         </div>
       </div>
     </footer>

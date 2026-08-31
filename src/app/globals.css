@@ -42,8 +42,8 @@
   --ink: 215 63% 7%;
   --ink-foreground: 210 40% 98%;
 
-  /* Royal blue — every primary action */
-  --accent: 220 87% 51%;
+  /* Brand red — primary action theme color matching official logo */
+  --accent: 350 85% 42%;
   --accent-foreground: 0 0% 100%;
 
   /* Electric cyan + warm gold — highlights only, never body text */
@@ -97,7 +97,7 @@
   --primary: 210 34% 96%;
   --primary-foreground: 210 65% 12%;
 
-  --accent: 220 88% 56%;
+  --accent: 350 85% 48%;
   --accent-foreground: 0 0% 100%;
 
   --cyan: 188 86% 58%;

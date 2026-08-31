@@ -6,10 +6,10 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Layers,
-  Menu,
   LayoutDashboard,
   LayoutTemplate,
   LogOut,
+  Menu,
   Package,
   Settings,
   ShoppingBag,
@@ -20,7 +20,7 @@ import {
   X,
 } from "lucide-react";
 
-import { Logo } from "@/components/layout/logo";
+import { Logo, NextBrandLogo } from "@/components/layout/logo";
 import { EASE } from "@/components/animations/motion-primitives";
 import { useAdminNav } from "@/hooks/use-admin-nav";
 import { cn, initials } from "@/lib/utils";
@@ -76,8 +76,10 @@ export function AdminSidebar({
 
   const nav = (
     <>
-      <div className="px-4 py-6">
-        <Logo href="/admin" onBrand />
+      <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10 mb-2">
+        <Logo href="/admin" onBrand compact className="h-8 w-auto shrink-0" />
+        <div className="h-6 w-px bg-white/15 shrink-0" />
+        <NextBrandLogo onBrand className="h-7 w-auto shrink-0" />
       </div>
 
       <nav className="flex-1 space-y-1 px-3" aria-label="Admin">
@@ -91,9 +93,7 @@ export function AdminSidebar({
               href={item.href}
               className={cn(
                 "relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors",
-                active
-                  ? "text-white"
-                  : "text-white/60 hover:text-white",
+                active ? "text-white" : "text-white/60 hover:text-white",
               )}
             >
               {active && (

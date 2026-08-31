@@ -3,28 +3,11 @@ import type { Metadata } from "next";
 import { AboutTeaser } from "@/components/home/about-teaser";
 import { CollectionsShowcase } from "@/components/home/collections-showcase";
 import { CtaBand } from "@/components/home/cta-band";
+import { FeatureBar } from "@/components/home/feature-bar";
 import { Hero } from "@/components/home/hero";
-import { MarqueeBand } from "@/components/home/marquee-band";
-import { ProductRail } from "@/components/home/product-rail";
+import { IndustriesServe } from "@/components/home/industries-serve";
 import { StatsBand } from "@/components/home/stats-band";
-import { WhyChooseUs } from "@/components/home/why-choose-us";
 import { SITE } from "@/lib/constants";
-import { getCollections } from "@/lib/queries/catalogue";
-import {
-  getAbout,
-  getContact,
-  getHero,
-  getStats,
-  getWhyChooseUs,
-} from "@/lib/queries/content";
-import {
-  getBestSellers,
-  getFeaturedProducts,
-  getNewArrivals,
-  getPublishedProductCount,
-  getShowcaseProducts,
-} from "@/lib/queries/products";
-import type { ProductCardDTO } from "@/types";
 
 export const metadata: Metadata = {
   title: `${SITE.name} — ${SITE.tagline}`,
@@ -32,90 +15,31 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-// Content and catalogue change rarely; revalidate hourly.
 export const revalidate = 3600;
 
-export default async function HomePage() {
-  const [
-    hero,
-    about,
-    why,
-    contact,
-    stats,
-    collections,
-    featured,
-    newArrivals,
-    bestSellers,
-    showcase,
-    productCount,
-  ] = await Promise.all([
-    getHero(),
-    getAbout(),
-    getWhyChooseUs(),
-    getContact(),
-    getStats(),
-    getCollections(),
-    getFeaturedProducts(10),
-    getNewArrivals(10),
-    getBestSellers(10),
-    getShowcaseProducts(12),
-    getPublishedProductCount(),
-  ]);
-
-  // On a freshly seeded catalogue nothing is flagged yet. Rather than render
-  // empty rails, fall back to a stable sample of the catalogue.
-  const featuredRail = featured.length > 0 ? featured : showcase.slice(0, 10);
-  const heroCards = (featured.length > 0 ? featured : showcase).slice(0, 3);
-
-  // One representative product per collection for the showcase artwork.
-  const previews: Record<string, ProductCardDTO | undefined> = {};
-  for (const c of collections) {
-    previews[c.slug] = showcase.find((p) => p.collection.slug === c.slug);
-  }
-
+export default function HomePage() {
   return (
     <>
-      <Hero content={hero} showcase={heroCards} productCount={productCount} />
+      {/* Hero Banner */}
+      <Hero />
 
-      <MarqueeBand />
+      {/* 4 Feature Cards */}
+      <FeatureBar />
 
-      <CollectionsShowcase collections={collections} previews={previews} />
+      {/* About NPPL Section */}
+      <AboutTeaser />
 
-      <ProductRail
-        eyebrow="Handpicked"
-        title="Featured products"
-        description="A selection from across the NEXT, NATIONAL and NATIONAL SAPPHIRE collections."
-        products={featuredRail}
-        viewAllHref="/products?featured=1"
-      />
+      {/* Our Products Section */}
+      <CollectionsShowcase />
 
-      <StatsBand stats={stats} />
+      {/* Impact Stats Banner */}
+      <StatsBand />
 
-      {newArrivals.length > 0 && (
-        <ProductRail
-          eyebrow="Just added"
-          title="New arrivals"
-          description="The latest additions to the National Plasto catalogue."
-          products={newArrivals}
-          viewAllHref="/products?isNew=1"
-        />
-      )}
+      {/* Industries We Serve Section */}
+      <IndustriesServe />
 
-      <WhyChooseUs content={why} />
-
-      {bestSellers.length > 0 && (
-        <ProductRail
-          eyebrow="Customer favourites"
-          title="Best sellers"
-          description="The products our customers come back for."
-          products={bestSellers}
-          viewAllHref="/products?bestSeller=1"
-        />
-      )}
-
-      <AboutTeaser content={about} />
-
-      <CtaBand phone={contact.phonePrimary} />
+      {/* Call to Action Section */}
+      <CtaBand />
     </>
   );
 }

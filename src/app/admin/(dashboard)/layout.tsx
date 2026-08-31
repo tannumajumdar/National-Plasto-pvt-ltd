@@ -33,7 +33,7 @@ export default async function AdminLayout({
   return (
     <div className="section-soft min-h-dvh bg-background">
       <AdminSidebar items={items} admin={{ name: admin.name, email: admin.email }} />
-      <div className="lg:pl-64">{children}</div>
+      <div className="flex flex-col min-h-dvh lg:pl-64">{children}</div>
     </div>
   );
 }

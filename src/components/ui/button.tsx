@@ -28,13 +28,13 @@ const buttonVariants = cva(
       variant: {
         // Deep navy, with a subtle lift into royal blue on hover.
         default:
-          "bg-linear-to-b from-primary to-[hsl(var(--primary)/0.92)] text-primary-foreground shadow-lift hover:-translate-y-0.5 hover:shadow-float",
-        // The primary call to action: royal blue into cyan, with a brand glow.
+          "bg-[#0b2545] hover:bg-[#071930] text-white shadow-lift hover:-translate-y-0.5 hover:shadow-float dark:bg-slate-800 dark:hover:bg-slate-700",
+        // The primary call to action: brand red matching official logo.
         accent:
-          "bg-[linear-gradient(120deg,hsl(var(--accent))_0%,hsl(var(--accent))_55%,hsl(var(--cyan))_140%)] text-accent-foreground shadow-lift hover:-translate-y-0.5 hover:shadow-glow",
+          "bg-[#c8102e] hover:bg-[#a80b24] text-white shadow-lift hover:-translate-y-0.5 hover:shadow-glow",
         // Warm gold, reserved for a single highlight action per screen.
         gold:
-          "bg-[linear-gradient(120deg,hsl(var(--gold))_0%,hsl(var(--national-deep))_140%)] text-[hsl(var(--primary))] shadow-lift hover:-translate-y-0.5 hover:shadow-float",
+          "bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-lift hover:-translate-y-0.5 hover:shadow-float",
         outline:
           "border border-border/80 bg-background/70 backdrop-blur-md hover:border-accent/45 hover:bg-background hover:-translate-y-0.5 hover:shadow-soft",
         secondary:

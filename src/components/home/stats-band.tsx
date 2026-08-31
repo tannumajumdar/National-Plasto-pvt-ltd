@@ -1,66 +1,56 @@
 "use client";
 
-import { motion } from "framer-motion";
-
-import { DynamicIcon } from "@/components/ui/dynamic-icon";
-import { AnimatedCounter, EASE } from "@/components/animations/motion-primitives";
+import React from "react";
+import { Award, Package, ShieldCheck, Users } from "lucide-react";
 import type { StatDTO } from "@/types";
 
-/**
- * Animated counters.
- *
- * Only stats an admin has published (or that resolve live from the catalogue)
- * reach this component — no placeholder figures are invented for display.
- */
-export function StatsBand({ stats }: { stats: StatDTO[] }) {
-  if (stats.length === 0) return null;
+const STATS = [
+  {
+    icon: Award,
+    value: "30+",
+    label: "YEARS OF EXPERIENCE",
+  },
+  {
+    icon: Users,
+    value: "500+",
+    label: "HAPPY CLIENTS",
+  },
+  {
+    icon: Package,
+    value: "1000+",
+    label: "PRODUCTS DELIVERED",
+  },
+  {
+    icon: ShieldCheck,
+    value: "100%",
+    label: "QUALITY ASSURANCE",
+  },
+];
 
+export function StatsBand({ stats: _stats }: { stats?: StatDTO[] } = {}) {
   return (
-    <section className="section-ink relative overflow-hidden py-18 sm:py-24">
-      <div aria-hidden className="rule-fade-bright absolute inset-x-0 top-0" />
-      <div aria-hidden className="pointer-events-none absolute inset-0 dot-grid opacity-40" />
-
-      <div className="container-page relative">
-        <div
-          className="grid gap-8 sm:gap-10"
-          style={{
-            gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, 13rem), 1fr))`,
-          }}
-        >
-          {stats.map((stat, i) => {
-            const numeric = Number(stat.value.replace(/[^\d.]/g, ""));
-            const isNumeric = Number.isFinite(numeric) && stat.value.trim() !== "";
-
+    <section className="bg-[#081b34] text-white py-12 lg:py-16">
+      <div className="container-page">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-y md:divide-y-0 md:divide-x divide-white/10">
+          {STATS.map((item, idx) => {
+            const IconComp = item.icon;
             return (
-              <motion.div
-                key={stat.id}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.4 }}
-                transition={{ duration: 0.55, delay: i * 0.1, ease: EASE }}
-                className="text-center"
+              <div
+                key={idx}
+                className="flex items-center justify-center gap-4 pt-6 md:pt-0 first:pt-0"
               >
-                {stat.icon && (
-                  <span className="mx-auto mb-4 grid size-12 place-items-center rounded-2xl bg-white/10 text-accent backdrop-blur">
-                    <DynamicIcon name={stat.icon} className="size-6" />
-                  </span>
-                )}
-
-                <p className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-                  {isNumeric ? (
-                    <AnimatedCounter value={numeric} suffix={stat.suffix ?? ""} />
-                  ) : (
-                    <>
-                      {stat.value}
-                      {stat.suffix}
-                    </>
-                  )}
-                </p>
-
-                <p className="mt-2 text-sm font-medium uppercase tracking-wider text-brand-foreground/65">
-                  {stat.label}
-                </p>
-              </motion.div>
+                <div className="grid size-12 shrink-0 place-items-center rounded-lg border border-white/20 bg-white/5 text-white">
+                  <IconComp className="size-6 stroke-[1.5]" />
+                </div>
+                <div>
+                  <div className="text-2xl sm:text-3xl font-black text-white leading-none">
+                    {item.value}
+                  </div>
+                  <div className="mt-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-300">
+                    {item.label}
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>

@@ -106,12 +106,10 @@ export function Logo({
  *
  * Kept separate from `Logo` so a collection mark and the corporate mark can
  * never be mistaken for one another.
- *
- * No recoloured variant exists for this one: the source is a noisy scan, and
- * lifting its compression artefacts leaves a visible haze on dark backgrounds.
- * It falls back to a flat white silhouette, which loses the red and blue but is
- * at least clean. Clean vector artwork from the client would fix it properly.
  */
+const NEXT_LIGHT_SRC = "/logo/next-nppl.png";
+const NEXT_DARK_SRC = "/logo/next-nppl-dark.png";
+
 export function NextBrandLogo({
   className,
   onBrand = false,
@@ -120,18 +118,41 @@ export function NextBrandLogo({
   /** True on an always-dark surface. */
   onBrand?: boolean;
 }) {
+  if (onBrand) {
+    return (
+      <Image
+        src={NEXT_DARK_SRC}
+        width={444}
+        height={204}
+        alt="NEXT — from the house of National Plasto"
+        priority
+        sizes="180px"
+        className={cn("h-9 w-auto object-contain shrink-0", className)}
+      />
+    );
+  }
+
   return (
-    <Image
-      src="/logo/next-nppl.png"
-      width={444}
-      height={204}
-      alt="NEXT — from the house of National Plasto"
-      sizes="200px"
-      className={cn(
-        "h-12 w-auto object-contain",
-        onBrand ? "brightness-0 invert" : "dark:brightness-0 dark:invert",
-        className,
-      )}
-    />
+    <span className={cn("inline-flex items-center shrink-0", className)}>
+      <Image
+        src={NEXT_LIGHT_SRC}
+        width={444}
+        height={204}
+        alt="NEXT — from the house of National Plasto"
+        priority
+        sizes="180px"
+        className="h-full w-auto object-contain shrink-0 block dark:hidden"
+      />
+      <Image
+        src={NEXT_DARK_SRC}
+        width={444}
+        height={204}
+        alt=""
+        aria-hidden
+        priority
+        sizes="180px"
+        className="h-full w-auto object-contain shrink-0 hidden dark:block"
+      />
+    </span>
   );
 }
