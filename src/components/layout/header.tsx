@@ -162,62 +162,65 @@ export function Header() {
             </div>
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden items-center gap-3 lg:gap-4.5 xl:gap-7 lg:flex shrink-0 whitespace-nowrap ml-6 lg:ml-8 xl:ml-12" aria-label="Main">
-              {MAIN_NAV.map((item) => (
-                <div key={item.href} className="relative group shrink-0">
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-1 py-1.5 text-xs xl:text-[13px] font-bold tracking-wider uppercase transition-colors whitespace-nowrap",
-                      isActive(item.href)
-                        ? "text-[#c8102e]"
-                        : "text-slate-700 hover:text-[#c8102e] dark:text-slate-200 dark:hover:text-[#c8102e]",
+            <nav className="hidden items-center gap-2.5 xl:gap-4 2xl:gap-6 xl:flex shrink-0 whitespace-nowrap ml-3 xl:ml-6" aria-label="Main">
+              {MAIN_NAV.map((item) => {
+                const isSecondary = item.label === "INDUSTRIES" || item.label === "QUALITY" || item.label === "INFRASTRUCTURE";
+                return (
+                  <div key={item.href} className={cn("relative group shrink-0", isSecondary && "hidden 2xl:block")}>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-1 py-1.5 text-xs 2xl:text-[13px] font-bold tracking-wider uppercase transition-colors whitespace-nowrap",
+                        isActive(item.href)
+                          ? "text-[#c8102e]"
+                          : "text-slate-700 hover:text-[#c8102e] dark:text-slate-200 dark:hover:text-[#c8102e]",
+                      )}
+                    >
+                      {item.label}
+                      {item.label === "PRODUCTS" && (
+                        <ChevronDown className="size-4 opacity-75 shrink-0" />
+                      )}
+                    </Link>
+                    {isActive(item.href) && (
+                      <motion.span
+                        layoutId="nav-underline"
+                        className="absolute -bottom-1 left-0 h-0.5 w-full bg-[#c8102e] rounded-full"
+                        transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                      />
                     )}
-                  >
-                    {item.label}
-                    {item.label === "PRODUCTS" && (
-                      <ChevronDown className="size-4 opacity-75 shrink-0" />
-                    )}
-                  </Link>
-                  {isActive(item.href) && (
-                    <motion.span
-                      layoutId="nav-underline"
-                      className="absolute -bottom-1 left-0 h-0.5 w-full bg-[#c8102e] rounded-full"
-                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                    />
-                  )}
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </nav>
 
             {/* Header Right Actions */}
-            <div className="flex shrink-0 items-center gap-2 sm:gap-3 ml-auto">
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 ml-auto mr-2 sm:mr-4 xl:mr-6">
               <button
                 onClick={() => setSearchOpen(true)}
-                className={cn(iconButton, "size-10")}
+                className={cn(iconButton, "size-8.5 sm:size-9")}
                 aria-label="Search products"
               >
-                <Search className="size-5" />
+                <Search className="size-4 sm:size-4.5" />
               </button>
 
               <ThemeToggle inverted={overlay} />
 
               <Link
                 href="/wishlist"
-                className={cn(iconButton, "size-10 hidden sm:grid")}
+                className={cn(iconButton, "size-8.5 sm:size-9 hidden xl:grid")}
                 aria-label={`Wishlist${mounted && wishlistCount ? `, ${wishlistCount} items` : ""}`}
               >
-                <Heart className="size-5" />
+                <Heart className="size-4 sm:size-4.5" />
                 <CountBadge count={mounted ? wishlistCount : 0} className="bg-rose-500" />
               </Link>
 
               <button
                 type="button"
                 onClick={() => openCart(true)}
-                className={cn(iconButton, "size-10")}
+                className={cn(iconButton, "size-8.5 sm:size-9")}
                 aria-label={`Open cart${mounted && cartCount ? `, ${cartCount} items` : ""}`}
               >
-                <ShoppingBag className="size-5" />
+                <ShoppingBag className="size-4 sm:size-4.5" />
                 <CountBadge count={mounted ? cartCount : 0} className="bg-accent text-accent-foreground" />
               </button>
 
@@ -225,7 +228,7 @@ export function Header() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="ml-1 grid size-9 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground transition-transform hover:scale-105"
+                      className="ml-0.5 grid size-8 sm:size-9 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground transition-transform hover:scale-105"
                       aria-label="Account menu"
                     >
                       {initials(user.name)}
@@ -270,7 +273,7 @@ export function Header() {
                   asChild
                   size="sm"
                   variant="outline"
-                  className="ml-1 hidden sm:inline-flex border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs uppercase tracking-wider"
+                  className="ml-0.5 hidden sm:inline-flex border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold text-[10px] sm:text-[11px] xl:text-xs uppercase tracking-wider px-2.5 py-1 sm:px-3 sm:py-1.5"
                 >
                   <Link href="/login">Login</Link>
                 </Button>
@@ -279,18 +282,18 @@ export function Header() {
               {/* Get a Quote Red Button */}
               <Button
                 asChild
-                className="ml-2 bg-[#c8102e] hover:bg-[#a80b24] text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-full shadow-sm"
+                className="ml-1 sm:ml-1.5 bg-[#c8102e] hover:bg-[#a80b24] text-white font-extrabold text-[10px] sm:text-[11px] xl:text-xs uppercase tracking-wide px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-sm shrink-0 whitespace-nowrap"
               >
-                <Link href="/contact">
-                  GET A QUOTE
-                  <ArrowRight className="ml-1 size-3.5" />
+                <Link href="/contact" className="whitespace-nowrap inline-flex items-center gap-1.5">
+                  <span>GET A QUOTE</span>
+                  <ArrowRight className="size-3.5 sm:size-4 shrink-0" />
                 </Link>
               </Button>
 
               {/* Mobile hamburger */}
               <button
                 onClick={() => setMenuOpen((v) => !v)}
-                className="ml-1 grid size-9 place-items-center rounded-full transition-colors hover:bg-secondary lg:hidden"
+                className="ml-1 grid size-9 place-items-center rounded-full transition-colors hover:bg-secondary xl:hidden"
                 aria-label={menuOpen ? "Close menu" : "Open menu"}
                 aria-expanded={menuOpen}
               >
