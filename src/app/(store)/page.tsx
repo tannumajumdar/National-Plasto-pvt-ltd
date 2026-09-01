@@ -7,6 +7,7 @@ import { FeatureBar } from "@/components/home/feature-bar";
 import { Hero } from "@/components/home/hero";
 import { IndustriesServe } from "@/components/home/industries-serve";
 import { StatsBand } from "@/components/home/stats-band";
+import { DistributorSection } from "@/components/DistributorSection";
 import { SITE } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -37,6 +38,9 @@ export default function HomePage() {
 
       {/* Industries We Serve Section */}
       <IndustriesServe />
+
+      {/* Partner with National Plasto / Become a Distributor Section */}
+      <DistributorSection />
 
       {/* Call to Action Section */}
       <CtaBand />

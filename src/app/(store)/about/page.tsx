@@ -5,6 +5,7 @@ import { JourneyTimeline } from "@/components/home/journey-timeline";
 import { StatsBand } from "@/components/home/stats-band";
 import { WhyChooseUs } from "@/components/home/why-choose-us";
 import { CtaBand } from "@/components/home/cta-band";
+import { TeamSection } from "@/components/team-section";
 import { PageHeader } from "@/components/layout/page-header";
 import { Reveal } from "@/components/animations/motion-primitives";
 import { SITE } from "@/lib/constants";
@@ -147,6 +148,8 @@ export default async function AboutPage() {
       <JourneyTimeline content={journey} />
 
       <WhyChooseUs content={why} />
+
+      <TeamSection />
 
       <CtaBand phone={contact.phonePrimary} />
     </>

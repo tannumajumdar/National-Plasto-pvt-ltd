@@ -30,6 +30,27 @@ export const CONTACT_DEFAULTS = {
   mapLabel: "19 Sukeas Lane, Kolkata, West Bengal 700001, India",
 } as const;
 
+/**
+ * Centralized Distributor / Business Partnership Contact Configuration.
+ * Edit values here or set NEXT_PUBLIC_WHATSAPP_NUMBER / NEXT_PUBLIC_CONTACT_EMAIL in .env.
+ */
+export const DISTRIBUTOR_CONTACT = {
+  // Replace with actual WhatsApp number (with country code, e.g. "+919830012345"):
+  whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+919830012345",
+
+  // Replace with actual email address:
+  emailAddress: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "info@nationalplasto.com",
+
+  // Pre-filled WhatsApp message for distributor enquiries:
+  whatsappMessage:
+    "Hello National Plasto Team,\nI am interested in becoming a distributor/business partner. Please share the details and requirements.",
+
+  // Pre-filled Email subject & body for distributor enquiries:
+  emailSubject: "Distributor / Business Partnership Enquiry",
+  emailBody:
+    "Hello National Plasto Team,\n\nI am interested in becoming a distributor/business partner with National Plasto Pvt. Ltd.\n\nPlease share the distributor requirements and further details.\n\nRegards",
+} as const;
+
 /* ------------------------------------------------------------------
    Collections — the three brand lines
    ------------------------------------------------------------------ */

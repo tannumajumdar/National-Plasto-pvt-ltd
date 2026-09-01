@@ -2,17 +2,14 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
-import { Check, Heart, Minus, Plus, ShoppingBag } from "lucide-react";
+import { ArrowRight, Heart } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { PriceTag } from "@/components/products/price-tag";
 import { ProductVisual } from "@/components/products/product-visual";
 import { RatingStars } from "@/components/products/rating-stars";
-import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { cn } from "@/lib/utils";
 import type { ProductCardDTO } from "@/types";
@@ -26,40 +23,10 @@ export function QuickViewDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const [qty, setQty] = React.useState(1);
-  const [added, setAdded] = React.useState(false);
-
-  const add = useCart((s) => s.add);
   const toggleWishlist = useWishlist((s) => s.toggle);
   const wishlisted = useWishlist((s) => (product ? s.ids.includes(product.id) : false));
 
-  // Reset transient state each time a different product opens.
-  React.useEffect(() => {
-    if (open) {
-      setQty(1);
-      setAdded(false);
-    }
-  }, [open, product?.id]);
-
   if (!product) return null;
-
-  const outOfStock = product.trackStock && product.stock <= 0;
-  const unpriced = product.price === null;
-  const maxQty = product.trackStock ? Math.max(1, Math.min(product.stock, 99)) : 99;
-
-  function handleAdd() {
-    if (!product) return;
-    if (unpriced) {
-      toast.info("Price not published yet", {
-        description: `Contact us for pricing on ${product.name}.`,
-      });
-      return;
-    }
-    add(product.id, qty);
-    setAdded(true);
-    toast.success("Added to cart", { description: `${qty} × ${product.name}` });
-    setTimeout(() => setAdded(false), 1800);
-  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -92,96 +59,27 @@ export function QuickViewDialog({
               <span className="text-xs text-muted-foreground">SKU: {product.sku}</span>
             </div>
 
-            <div className="mt-5">
-              <PriceTag price={product.price} discountPrice={product.discountPrice} size="lg" />
-            </div>
-
             <p className="mt-4 line-clamp-4 text-sm leading-relaxed text-muted-foreground">
               {product.shortDescription ??
-                `${product.name} is part of the ${product.collection.name} collection from National Plasto. Full details are being added — contact us for specifications.`}
+                `${product.name} is part of the ${product.collection.name} collection from National Plasto. Contact us for specifications and volume quotes.`}
             </p>
 
-            <div className="mt-5 flex items-center gap-2 text-sm">
-              <span
-                className={cn(
-                  "size-2 rounded-full",
-                  outOfStock ? "bg-rose-500" : "bg-emerald-500",
-                )}
-              />
-              <span className={outOfStock ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}>
-                {outOfStock
-                  ? "Out of stock"
-                  : product.trackStock
-                    ? `In stock — ${product.stock} available`
-                    : "In stock"}
-              </span>
-            </div>
-
             <div className="mt-auto space-y-3 pt-6">
-              {!unpriced && !outOfStock && (
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-muted-foreground">Quantity</span>
-                  <div className="flex items-center rounded-full border border-border">
-                    <button
-                      onClick={() => setQty((q) => Math.max(1, q - 1))}
-                      disabled={qty <= 1}
-                      className="grid size-9 place-items-center rounded-full transition-colors hover:bg-secondary disabled:opacity-40"
-                      aria-label="Decrease quantity"
-                    >
-                      <Minus className="size-4" />
-                    </button>
-                    <span className="w-10 text-center text-sm font-semibold tabular-nums">{qty}</span>
-                    <button
-                      onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
-                      disabled={qty >= maxQty}
-                      className="grid size-9 place-items-center rounded-full transition-colors hover:bg-secondary disabled:opacity-40"
-                      aria-label="Increase quantity"
-                    >
-                      <Plus className="size-4" />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
                 <Button
-                  variant="accent"
-                  className="flex-1 overflow-hidden"
-                  onClick={handleAdd}
-                  disabled={outOfStock}
+                  asChild
+                  className="flex-1 bg-[#c8102e] hover:bg-[#a80b24] text-white font-extrabold text-xs uppercase tracking-wider rounded-full shadow-md py-3"
                 >
-                  <AnimatePresence mode="wait" initial={false}>
-                    {added ? (
-                      <motion.span
-                        key="added"
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -12 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex items-center gap-2"
-                      >
-                        <Check className="size-4" />
-                        Added
-                      </motion.span>
-                    ) : (
-                      <motion.span
-                        key="add"
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -12 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex items-center gap-2"
-                      >
-                        <ShoppingBag className="size-4" />
-                        {unpriced ? "Enquire" : "Add to Cart"}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
+                  <Link href={`/contact?product=${encodeURIComponent(product.name)}`} className="flex items-center justify-center gap-1.5">
+                    <span>GET A QUOTE</span>
+                    <ArrowRight className="size-4 shrink-0" />
+                  </Link>
                 </Button>
 
                 <Button
                   variant="outline"
                   size="icon"
+                  className="rounded-full shrink-0"
                   aria-label={wishlisted ? "Remove from wishlist" : "Save to wishlist"}
                   aria-pressed={wishlisted}
                   onClick={() => {

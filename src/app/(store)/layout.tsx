@@ -5,6 +5,8 @@ import { PageTransition } from "@/components/layout/page-transition";
 import { CartSync } from "@/components/cart/cart-sync";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { SessionProvider } from "@/hooks/use-session";
+import { CompanyIntro } from "@/components/CompanyIntro";
+import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 
 /**
  * This layout intentionally does not read cookies or query the session.
@@ -15,6 +17,7 @@ import { SessionProvider } from "@/hooks/use-session";
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
+      <CompanyIntro />
       <div className="flex min-h-dvh flex-col">
         <SkipToContent />
         <Header />
@@ -30,6 +33,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
         </main>
         <CartDrawer />
         <Footer />
+        <FloatingWhatsApp />
       </div>
     </SessionProvider>
   );

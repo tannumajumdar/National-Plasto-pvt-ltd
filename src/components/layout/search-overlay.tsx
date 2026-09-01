@@ -7,7 +7,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Loader2, Search, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { PriceTag } from "@/components/products/price-tag";
 import { ProductVisual } from "@/components/products/product-visual";
 import { EASE } from "@/components/animations/motion-primitives";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -201,8 +200,8 @@ export function SearchOverlay({
                               {p.collection.name}
                             </Badge>
                           </span>
-                          <span className="mt-0.5 block">
-                            <PriceTag price={p.price} discountPrice={p.discountPrice} size="sm" />
+                          <span className="mt-0.5 block text-xs font-bold uppercase tracking-wider text-[#c8102e]">
+                            Get a Quote →
                           </span>
                         </span>
 

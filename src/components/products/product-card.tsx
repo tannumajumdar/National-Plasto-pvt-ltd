@@ -3,16 +3,13 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Eye, Heart, ShoppingBag } from "lucide-react";
+import { ArrowRight, Eye, Heart } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PriceTag } from "@/components/products/price-tag";
 import { ProductVisual } from "@/components/products/product-visual";
 import { RatingStars } from "@/components/products/rating-stars";
-import { useCart } from "@/hooks/use-cart";
-import { useCartDrawer } from "@/hooks/use-cart-drawer";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { cn } from "@/lib/utils";
 import { EASE } from "@/components/animations/motion-primitives";
@@ -35,35 +32,12 @@ export function ProductCard({
   priority?: boolean;
   className?: string;
 }) {
-  const add = useCart((s) => s.add);
-  const openCart = useCartDrawer((s) => s.setOpen);
   const toggleWishlist = useWishlist((s) => s.toggle);
   const wishlisted = useWishlist((s) => s.ids.includes(product.id));
 
   const outOfStock = product.trackStock && product.stock <= 0;
-  const unpriced = product.price === null;
   const primary = product.images[0]?.url ?? null;
   const secondary = product.images[1]?.url ?? null;
-
-  function handleAdd(e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (unpriced) {
-      toast.info("Price not published yet", {
-        description: `Contact us for pricing on ${product.name}.`,
-      });
-      return;
-    }
-    if (outOfStock) {
-      toast.error("Out of stock", { description: `${product.name} is currently unavailable.` });
-      return;
-    }
-
-    add(product.id, 1);
-    toast.success("Added to cart", { description: product.name });
-    openCart(true);
-  }
 
   function handleWishlist(e: React.MouseEvent) {
     e.preventDefault();
@@ -148,14 +122,15 @@ export function ProductCard({
           )}
         >
           <Button
+            asChild
             size="sm"
             variant="accent"
             className="flex-1 shadow-lift"
-            onClick={handleAdd}
-            disabled={outOfStock}
           >
-            <ShoppingBag />
-            {unpriced ? "Enquire" : "Add to Cart"}
+            <Link href={`/contact?product=${encodeURIComponent(product.name)}`}>
+              <ArrowRight className="size-4" />
+              Get a Quote
+            </Link>
           </Button>
 
           {onQuickView && (
@@ -217,8 +192,16 @@ export function ProductCard({
 
         <RatingStars value={product.ratingAvg} count={product.reviewCount} size="xs" />
 
-        <div className="mt-auto flex items-end justify-between gap-3 pt-3">
-          <PriceTag price={product.price} discountPrice={product.discountPrice} />
+        <div className="mt-auto pt-3">
+          <Button
+            asChild
+            className="w-full bg-[#c8102e] hover:bg-[#a80b24] text-white font-extrabold text-xs uppercase tracking-wider rounded-full shadow-sm py-2.5"
+          >
+            <Link href={`/contact?product=${encodeURIComponent(product.name)}`} className="flex items-center justify-center gap-1">
+              <span>GET A QUOTE</span>
+              <ArrowRight className="size-3.5 shrink-0" />
+            </Link>
+          </Button>
         </div>
       </div>
     </motion.article>
