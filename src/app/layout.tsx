@@ -79,10 +79,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a1420" },
-  ],
+  // A single unconditional tag, not a prefers-color-scheme pair: the site
+  // defaults to dark regardless of the OS setting, and applyTheme() rewrites
+  // this same tag when a visitor picks light.
+  themeColor: "#0a1420",
   width: "device-width",
   initialScale: 1,
 };

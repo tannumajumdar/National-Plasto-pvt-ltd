@@ -6,7 +6,6 @@ import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-
 const SLIDES = [
   {
     subtitle: "EXCELLENCE IN",
@@ -77,16 +76,15 @@ export function Hero() {
     <section
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      className="relative overflow-hidden bg-gradient-to-r from-white via-[#f4f5f8] to-[#e8ebf0] pt-10 pb-14 lg:pt-14 lg:pb-16 select-none"
+      className="relative overflow-hidden bg-gradient-to-r from-white via-[#f4f5f8] to-[#e8ebf0] dark:from-[#0a1420] dark:via-[#0d1b2c] dark:to-[#122036] pt-10 pb-14 lg:pt-14 lg:pb-16 select-none"
     >
       {/* Background Graphic - Matching Architectural Factory Glass Window Structure */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         {/* Soft background base matching hero image studio lighting */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-[#f3f5f8] to-[#e6eaf0]" />
-
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-[#f3f5f8] to-[#e6eaf0] dark:from-[#0a1420] dark:via-[#0d1b2c] dark:to-[#122036]" />
         {/* Diagonal Architectural Window Lines */}
         <svg
-          className="absolute inset-0 h-full w-full opacity-60"
+          className="absolute inset-0 h-full w-full opacity-60 dark:opacity-20"
           preserveAspectRatio="none"
           viewBox="0 0 1440 600"
           fill="none"
@@ -115,7 +113,7 @@ export function Hero() {
         </svg>
 
         {/* Studio Floor reflection blend at bottom */}
-        <div className="absolute bottom-0 inset-x-0 h-1/3 bg-gradient-to-t from-[#cbd5e1]/40 via-[#f1f5f9]/20 to-transparent" />
+        <div className="absolute bottom-0 inset-x-0 h-1/3 bg-gradient-to-t from-[#cbd5e1]/40 via-[#f1f5f9]/20 dark:from-[#050d17]/70 dark:via-[#0a1420]/30 to-transparent" />
       </div>
 
       <div className="container-page relative z-10">
@@ -130,19 +128,19 @@ export function Hero() {
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.35, ease: "easeOut" }}
               >
-                <span className="block text-xs sm:text-sm font-bold uppercase tracking-widest text-[#c8102e]">
+                <span className="block text-xs sm:text-sm font-bold uppercase tracking-widest text-[#c8102e] dark:text-[#ff7183]">
                   {slide.subtitle}
                 </span>
 
-                <h1 className="mt-1.5 text-3xl sm:text-4xl lg:text-[48px] xl:text-[54px] font-black leading-[1.04] tracking-tight text-[#0b2545] uppercase">
+                <h1 className="mt-1.5 text-3xl sm:text-4xl lg:text-[48px] xl:text-[54px] font-black leading-[1.04] tracking-tight text-[#0b2545] dark:text-white uppercase">
                   {slide.title}
                 </h1>
 
-                <p className="mt-3.5 max-w-md text-xs sm:text-sm leading-relaxed text-slate-600 mx-auto lg:mx-0 font-medium">
+                <p className="mt-3.5 max-w-md text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300 mx-auto lg:mx-0 font-medium">
                   {slide.description}
                 </p>
 
-                <div className="mt-3 font-serif italic text-lg sm:text-xl font-medium text-[#c8102e]">
+                <div className="mt-3 font-serif italic text-lg sm:text-xl font-medium text-[#c8102e] dark:text-[#ff7183]">
                   {slide.tagline}
                 </div>
               </motion.div>
@@ -162,7 +160,7 @@ export function Hero() {
               <Button
                 asChild
                 variant="outline"
-                className="border-2 border-[#1b365d] text-[#1b365d] bg-white hover:bg-slate-50 font-extrabold text-xs uppercase tracking-wider px-7 py-3 rounded-lg transition-all shadow-sm"
+                className="border-2 border-[#1b365d] text-[#1b365d] bg-white hover:bg-slate-50 dark:border-white/70 dark:text-white dark:bg-transparent dark:hover:bg-white/10 font-extrabold text-xs uppercase tracking-wider px-7 py-3 rounded-lg transition-all shadow-sm"
               >
                 <Link href="/about">ABOUT US</Link>
               </Button>
@@ -182,7 +180,7 @@ export function Hero() {
                       : "size-3 rounded-full bg-[#0b2545]"
                   } ${
                     currentSlide === idx
-                      ? "scale-125 ring-2 ring-offset-2 ring-slate-400 opacity-100"
+                      ? "scale-125 ring-2 ring-offset-2 ring-offset-background ring-slate-400 dark:ring-slate-500 opacity-100"
                       : "opacity-45 hover:opacity-80"
                   }`}
                   aria-label={`Go to slide ${idx + 1}`}
@@ -208,7 +206,7 @@ export function Hero() {
                     width={900}
                     height={650}
                     priority
-                    className="h-auto w-full object-contain mix-blend-multiply"
+                    className="h-auto w-full object-contain mix-blend-multiply dark:mix-blend-normal"
                   />
                 </motion.div>
               </AnimatePresence>
@@ -219,7 +217,7 @@ export function Hero() {
               onClick={() =>
                 setCurrentSlide((prev) => (prev === 0 ? SLIDES.length - 1 : prev - 1))
               }
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 grid size-9 place-items-center rounded-full bg-white/80 border border-slate-200 text-slate-700 shadow-sm hover:bg-white transition-colors"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 grid size-9 place-items-center rounded-full bg-white/80 border border-slate-200 text-slate-700 shadow-sm hover:bg-white dark:bg-slate-900/70 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-900 transition-colors"
               aria-label="Previous slide"
             >
               <ChevronLeft className="size-5" />
@@ -227,7 +225,7 @@ export function Hero() {
 
             <button
               onClick={() => setCurrentSlide((prev) => (prev + 1) % SLIDES.length)}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 grid size-9 place-items-center rounded-full bg-white/80 border border-slate-200 text-slate-700 shadow-sm hover:bg-white transition-colors"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 grid size-9 place-items-center rounded-full bg-white/80 border border-slate-200 text-slate-700 shadow-sm hover:bg-white dark:bg-slate-900/70 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-900 transition-colors"
               aria-label="Next slide"
             >
               <ChevronRight className="size-5" />

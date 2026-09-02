@@ -4,6 +4,7 @@ import * as React from "react";
 
 import {
   applyTheme,
+  DEFAULT_THEME,
   isTheme,
   THEME_STORAGE_KEY,
   type ResolvedTheme,
@@ -31,8 +32,8 @@ const ThemeContext = React.createContext<ThemeContextValue | null>(null);
  * render, so the server and the first client render agree.
  */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = React.useState<Theme>("system");
-  const [resolvedTheme, setResolvedTheme] = React.useState<ResolvedTheme>("light");
+  const [theme, setThemeState] = React.useState<Theme>(DEFAULT_THEME);
+  const [resolvedTheme, setResolvedTheme] = React.useState<ResolvedTheme>("dark");
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -42,7 +43,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Private-mode Safari throws on access; fall back to system.
     }
-    const initial: Theme = isTheme(stored) ? stored : "system";
+    const initial: Theme = isTheme(stored) ? stored : DEFAULT_THEME;
     setThemeState(initial);
     setResolvedTheme(applyTheme(initial));
     setMounted(true);
@@ -62,7 +63,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     const onStorage = (e: StorageEvent) => {
       if (e.key !== THEME_STORAGE_KEY) return;
-      const next: Theme = isTheme(e.newValue) ? e.newValue : "system";
+      const next: Theme = isTheme(e.newValue) ? e.newValue : DEFAULT_THEME;
       setThemeState(next);
       setResolvedTheme(applyTheme(next));
     };

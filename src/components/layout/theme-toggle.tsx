@@ -19,18 +19,19 @@ const OPTIONS: { value: Theme; label: string; icon: typeof Sun; hint: string }[]
   { value: "light", label: "Light", icon: Sun, hint: "Always light" },
   { value: "dark", label: "Dark", icon: Moon, hint: "Always dark" },
   { value: "system", label: "System", icon: Monitor, hint: "Match my device" },
+  // "dark" is also what an unset preference resolves to — see DEFAULT_THEME.
 ];
 
 /**
  * Light / dark / system switcher.
  *
- * Three options rather than a two-way flip: "system" is the honest default,
- * and a plain toggle would silently override whatever the visitor already
- * told their operating system they prefer.
+ * Three options rather than a two-way flip: the site paints dark by default,
+ * so visitors need an explicit way back to light *and* a way to hand the
+ * decision to their operating system.
  *
- * Until `mounted`, the icon renders in a fixed state. The server cannot know
- * the stored preference, so painting the real icon straight away would mean a
- * hydration mismatch on every load.
+ * Until `mounted`, the icon renders in a fixed state — the moon, matching the
+ * dark default. The server cannot know the stored preference, so painting the
+ * real icon straight away would mean a hydration mismatch on every load.
  */
 export function ThemeToggle({
   className,
@@ -42,7 +43,7 @@ export function ThemeToggle({
 }) {
   const { theme, resolvedTheme, setTheme, mounted } = useTheme();
 
-  const Icon = !mounted ? Sun : resolvedTheme === "dark" ? Moon : Sun;
+  const Icon = !mounted || resolvedTheme === "dark" ? Moon : Sun;
 
   return (
     <DropdownMenu>
@@ -110,12 +111,12 @@ export function ThemeToggleButton({ className }: { className?: string }) {
       )}
       aria-label={mounted ? `Switch to the ${next} theme` : "Switch colour theme"}
     >
-      {mounted && resolvedTheme === "dark" ? (
+      {!mounted || resolvedTheme === "dark" ? (
         <Sun className="size-5" />
       ) : (
         <Moon className="size-5" />
       )}
-      <span>{mounted && resolvedTheme === "dark" ? "Light mode" : "Dark mode"}</span>
+      <span>{!mounted || resolvedTheme === "dark" ? "Light mode" : "Dark mode"}</span>
     </button>
   );
 }

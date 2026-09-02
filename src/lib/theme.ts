@@ -10,6 +10,13 @@ export const THEME_STORAGE_KEY = "np-theme";
 export const THEMES = ["light", "dark", "system"] as const;
 export type Theme = (typeof THEMES)[number];
 
+/**
+ * What a visitor gets before they have expressed any preference. The site is
+ * designed dark-first, so an unset preference paints dark rather than
+ * following the OS; "System" is still one click away in the theme menu.
+ */
+export const DEFAULT_THEME: Theme = "dark";
+
 /** The two themes that can actually be painted. "system" resolves to one. */
 export type ResolvedTheme = "light" | "dark";
 
@@ -27,7 +34,7 @@ export function isTheme(value: unknown): value is Theme {
  *
  * Kept deliberately tiny and defensive; a browser with localStorage disabled
  * (Safari private mode throws on access) must still render, just in the
- * system theme.
+ * default (dark) theme.
  */
 export const THEME_INIT_SCRIPT = `
 (function () {
@@ -35,11 +42,14 @@ export const THEME_INIT_SCRIPT = `
     var stored = null;
     try { stored = localStorage.getItem('${THEME_STORAGE_KEY}'); } catch (e) {}
     var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    // Anything that is not exactly 'light' or 'dark' means "follow the OS" —
-    // including a missing key and any value we do not recognise. This has to
-    // match ThemeProvider's isTheme() fallback exactly, or a stale value would
-    // paint one theme and then flip to the other on hydration.
-    var dark = stored === 'dark' || (stored !== 'light' && prefersDark);
+    // 'light' / 'dark' are explicit choices; only 'system' follows the OS.
+    // Anything else — a missing key, a stale value — falls back to the site
+    // default, which is dark. This has to match ThemeProvider's isTheme()
+    // fallback exactly, or a stale value would paint one theme and then flip
+    // to the other on hydration.
+    var dark = stored === 'light' ? false
+      : stored === 'system' ? prefersDark
+      : true;
     var root = document.documentElement;
     root.classList.toggle('dark', dark);
     root.style.colorScheme = dark ? 'dark' : 'light';

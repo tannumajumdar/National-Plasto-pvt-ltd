@@ -235,29 +235,33 @@ export function CompanyIntro({ forcePlay = false, onComplete }: CompanyIntroProp
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0, transition: { duration: 0.8 } }}
-                className="absolute inset-0 z-20 flex items-center justify-center overflow-hidden"
+                className="absolute inset-0 z-20 flex items-end sm:items-center justify-center overflow-hidden"
               >
                 {/* Company Factory Image with Slow Majestic Zoom */}
                 <motion.div
-                  initial={{ scale: 1.15, opacity: 0 }}
-                  animate={{ scale: 1.01, opacity: 1 }}
+                  initial={{ scale: 1.12, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 3.6, ease: [0.25, 1, 0.5, 1] }}
-                  className="absolute inset-0 z-0 h-full w-full"
+                  className="absolute inset-x-0 top-0 z-0 w-full aspect-[1024/682] sm:inset-0 sm:aspect-auto sm:h-full"
                 >
                   <Image
                     src={INTRO_ASSETS.companyPhoto}
                     alt="National Plasto Corporate Headquarters & Manufacturing Facility"
                     fill
                     priority
-                    className="object-cover object-center"
+                    sizes="100vw"
+                    className="object-contain object-top sm:object-cover sm:object-center"
                   />
-                  {/* Dark Vignette Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#07111F] via-[#07111F]/70 to-[#07111F]/80 mix-blend-multiply" />
-                  <div className="absolute inset-0 bg-black/40" />
+                  {/* Dark Vignette Gradient Overlay (desktop: full cinematic dim) */}
+                  <div className="absolute inset-0 hidden sm:block bg-gradient-to-t from-[#07111F] via-[#07111F]/70 to-[#07111F]/80 mix-blend-multiply" />
+                  <div className="absolute inset-0 hidden sm:block bg-black/40" />
+                  {/* Mobile: keep the photo (and its logo) readable, just blend the
+                      bottom edge into the navy backdrop */}
+                  <div className="absolute inset-0 sm:hidden bg-gradient-to-b from-[#07111F]/25 via-transparent to-[#07111F]" />
                 </motion.div>
 
                 {/* Company Name & Tagline Overlay Typography */}
-                <div className="relative z-10 max-w-4xl px-6 text-center flex flex-col items-center">
+                <div className="relative z-10 w-full max-w-4xl px-6 pb-14 sm:pb-0 text-center flex flex-col items-center">
                   {/* Subtle Top Badge */}
                   <motion.div
                     initial={{ opacity: 0, y: 15 }}
