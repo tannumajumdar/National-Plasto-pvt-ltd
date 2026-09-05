@@ -13,7 +13,11 @@ import { getCategoryTree, getCollectionBySlug, getCollections } from "@/lib/quer
 import { getPriceBounds, getProducts } from "@/lib/queries/products";
 import { cn } from "@/lib/utils";
 
-export const revalidate = 3600;
+// Five minutes, not an hour. These pages are prerendered, so their data is a
+// snapshot: an admin edit refreshes them at once through revalidatePath, but a
+// change made straight against the database — a seed, a bulk import — bypasses
+// that, and an hour of stale catalogue is too long to wait on.
+export const revalidate = 300;
 
 export async function generateStaticParams() {
   // Prerender each collection when the database is reachable. If it is not
