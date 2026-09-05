@@ -52,6 +52,25 @@ async function readDatabaseUrl(file) {
   return value;
 }
 
+/**
+ * Prisma's defaults assume a database on the same network. Over Railway's
+ * public TCP proxy every statement is an internet round trip, and the seed
+ * makes several hundred of them in sequence — long enough that the default
+ * 10-second pool timeout fires and the run dies half-finished. A small pool
+ * with a generous timeout rides that out.
+ */
+function withPoolSettings(url) {
+  try {
+    const u = new URL(url);
+    u.searchParams.set("connection_limit", "5");
+    u.searchParams.set("pool_timeout", "60");
+    u.searchParams.set("connect_timeout", "30");
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
 /** host:port/database, with the password removed — safe to print. */
 function describe(url) {
   try {
@@ -170,7 +189,7 @@ async function main() {
   });
 
   console.log("\n2/2  seed\n");
-  await run("npx", ["tsx", "prisma/seed.ts"], { DATABASE_URL: url });
+  await run("npx", ["tsx", "prisma/seed.ts"], { DATABASE_URL: withPoolSettings(url) });
 
   console.log("\nDone. Photographs are a separate step — they are not in git:");
   console.log("  public/uploads/products  387 files, 58 MB\n");

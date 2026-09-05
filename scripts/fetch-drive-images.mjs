@@ -403,10 +403,14 @@ async function main() {
     }
 
     await sleep(250);
-    const err = await download(urlsFor(job.id, size), job.target);
+    const urls = urlsFor(job.id, size);
+    const err = await download(urls, job.target);
     if (err) {
       failed++;
-      console.log(`  ! ${job.sku} image ${job.index}: ${err}`);
+      // The URL goes in the message on purpose: when a download fails the next
+      // question is always "does that link work in a browser?", and without it
+      // there is no way to tell a bad file id from a throttled host.
+      console.log(`  ! ${job.sku} image ${job.index}: ${err}  ${urls[0]}`);
     } else {
       done++;
     }

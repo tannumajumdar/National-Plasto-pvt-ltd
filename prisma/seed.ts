@@ -154,44 +154,50 @@ async function main() {
   /* Survivors keep their row (and any pricing or imagery an admin added) but
      their old SKU may be the number this list assigns to a different product.
      Park every survivor on a temporary SKU so the renumbering below cannot
-     collide part-way through. */
-  const survivors = await prisma.product.findMany({ select: { id: true } });
-  for (const s of survivors) {
-    await prisma.product.update({
-      where: { id: s.id },
-      data: { sku: `TMP-${s.id}` },
-    });
-  }
+     collide part-way through.
 
-  for (const p of plan) {
-    await prisma.product.upsert({
-      where: { slug: p.slug },
-      update: {
-        name: p.name,
-        sku: p.sku,
-        collectionId: p.collectionId,
-        categoryId: p.categoryId,
-        isPremium: p.isPremium,
-        isPublished: true,
-      },
-      create: {
-        name: p.name,
-        slug: p.slug,
-        sku: p.sku,
-        collectionId: p.collectionId,
-        categoryId: p.categoryId,
-        isPremium: p.isPremium,
-        // No price, description or specifications supplied by the source
-        // document — an admin fills these in.
-        price: null,
-        discountPrice: null,
-        stock: 0,
-        trackStock: false,
-        isPublished: true,
-        needsReview: true,
-        metaTitle: `${p.name} — ${p.brandName} Collection | National Plasto`,
-      },
-    });
+     One statement rather than one per row: against a remote database — the
+     production seed runs over Railway's public TCP proxy — a loop of single
+     updates is a few hundred internet round trips, and the connection does not
+     reliably survive them. */
+  await prisma.$executeRaw`UPDATE products SET sku = CONCAT('TMP-', id)`;
+
+  /* Upserts have to stay one-per-product, but they go over the wire in batches
+     rather than one round trip each, for the same reason. */
+  const BATCH = 25;
+  for (let i = 0; i < plan.length; i += BATCH) {
+    await prisma.$transaction(
+      plan.slice(i, i + BATCH).map((p) =>
+        prisma.product.upsert({
+          where: { slug: p.slug },
+          update: {
+            name: p.name,
+            sku: p.sku,
+            collectionId: p.collectionId,
+            categoryId: p.categoryId,
+            isPremium: p.isPremium,
+            isPublished: true,
+          },
+          create: {
+            name: p.name,
+            slug: p.slug,
+            sku: p.sku,
+            collectionId: p.collectionId,
+            categoryId: p.categoryId,
+            isPremium: p.isPremium,
+            // No price, description or specifications supplied by the source
+            // document — an admin fills these in.
+            price: null,
+            discountPrice: null,
+            stock: 0,
+            trackStock: false,
+            isPublished: true,
+            needsReview: true,
+            metaTitle: `${p.name} — ${p.brandName} Collection | National Plasto`,
+          },
+        }),
+      ),
+    );
   }
   console.log(`  products      ${plan.length}`);
 
