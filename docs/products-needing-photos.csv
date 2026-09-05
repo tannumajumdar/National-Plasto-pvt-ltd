@@ -8,11 +8,7 @@ NEXT,Chairs,Premium Armless Chairs,Discover,NP-NXT-019,yes
 NEXT,Chairs,Premium Armless Chairs,Caliber,NP-NXT-020,yes
 NEXT,Chairs,Premium Armless Chairs,Ruffel,NP-NXT-022,yes
 NEXT,Chairs,Premium Armless Chairs,Invent,NP-NXT-023,yes
-NEXT,Chairs,Premium Armless Chairs,Spread,NP-NXT-024,yes
 NEXT,Chairs,Premium Armless Chairs,Stripes,NP-NXT-026,yes
-NEXT,Chairs,Premium Armless Chairs,Rolex,NP-NXT-027,yes
-NEXT,Chairs,Premium Armless Chairs,Star,NP-NXT-028,yes
-NEXT,Chairs,Economical Armless Chairs,Imperial RRK,NP-NXT-031,
 NEXT,Chairs,Economical Armless Chairs,Imperial New,NP-NXT-032,
 NEXT,Chairs,Economical Armless Chairs,Imperial WiFi,NP-NXT-033,
 NEXT,Baby & Kids,Baby Chairs,Dolphin Easy Baby,NP-NXT-036,
@@ -20,22 +16,11 @@ NEXT,Baby & Kids,Baby Chairs,Baby Ultimate,NP-NXT-038,
 NEXT,Baby & Kids,Baby Chairs,Mickey,NP-NXT-041,
 NEXT,Baby & Kids,Baby Tables,Kidjee Junior,NP-NXT-045,
 NEXT,Baby & Kids,Baby Tables,Kids Playtime,NP-NXT-046,
-NEXT,Stools,,Swift,NP-NXT-049,
 NEXT,Stools,,Charm,NP-NXT-050,
 NEXT,Stools,,Marvel,NP-NXT-053,
 NEXT,Stools,,Enlarge Step Stool,NP-NXT-055,
-NEXT,Tables,Tea Tables,Rider,NP-NXT-057,
 NEXT,Tables,Tea Tables,Dogma,NP-NXT-058,
 NEXT,Tables,Tea Tables,Mesh,NP-NXT-059,
-NEXT,Tables,Dining Tables,Buffet,NP-NXT-060,
-NEXT,Tables,Dining Tables,Fortune,NP-NXT-061,
-NEXT,Tables,Dining Tables,Cherish,NP-NXT-062,
-NEXT,Tables,Dining Tables,Glance,NP-NXT-063,
-NEXT,Storage,Trolleys,Utility Rack-4,NP-NXT-064,
-NEXT,Storage,Trolleys,Utility Rack-5,NP-NXT-065,
-NEXT,Storage,Wardrobes,Atom 2FT,NP-NXT-066,
-NEXT,Storage,Wardrobes,Atom 4FT,NP-NXT-067,
-NEXT,Storage,Wardrobes,Atom 6FT,NP-NXT-068,
 NEXT,Storage,Wardrobes,Princess 2FT,NP-NXT-069,
 NEXT,Storage,Wardrobes,Princess 4FT,NP-NXT-070,
 NEXT,Storage,Shoe Racks,Shoe Rack 2 Feet,NP-NXT-071,
@@ -78,7 +63,6 @@ NATIONAL,Stools,Economical Stools,Charm,NP-NTL-082,
 NATIONAL,Tables,Economical Coffee Tables,Indica,NP-NTL-091,
 NATIONAL,Tables,Economical Coffee Tables,Alto,NP-NTL-092,
 NATIONAL,Tables,Dining Tables,Punch,NP-NTL-097,
-NATIONAL SAPPHIRE,Chairs,Heavy Guarantee Arm Chairs,Bheem,NP-NSP-008,yes
 NATIONAL SAPPHIRE,Chairs,Economical Arm Chairs,Dolphin,NP-NSP-009,
 NATIONAL SAPPHIRE,Chairs,Economical Arm Chairs,Brezza,NP-NSP-010,
 NATIONAL SAPPHIRE,Baby & Kids,Baby Chairs,Toy Baby,NP-NSP-018,
