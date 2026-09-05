@@ -76,6 +76,8 @@
   --national-deep: 32 88% 44%;
   --sapphire: 188 86% 45%;
   --sapphire-deep: 200 84% 30%;
+  --captain: 168 76% 32%;
+  --captain-deep: 172 72% 22%;
 
   /* Elevation — navy-tinted, never neutral grey */
   --shadow-soft: 0 1px 2px hsl(210 50% 14% / 0.04), 0 4px 14px hsl(210 50% 14% / 0.06);
@@ -129,6 +131,8 @@
   --national-deep: 32 88% 52%;
   --sapphire: 188 86% 58%;
   --sapphire-deep: 196 80% 42%;
+  --captain: 168 68% 46%;
+  --captain-deep: 172 64% 34%;
 
   --shadow-soft: 0 1px 2px hsl(0 0% 0% / 0.34), 0 4px 14px hsl(0 0% 0% / 0.32);
   --shadow-lift: 0 2px 6px hsl(0 0% 0% / 0.36), 0 14px 36px hsl(0 0% 0% / 0.46);
@@ -174,6 +178,8 @@
   --color-national-deep: hsl(var(--national-deep));
   --color-sapphire: hsl(var(--sapphire));
   --color-sapphire-deep: hsl(var(--sapphire-deep));
+  --color-captain: hsl(var(--captain));
+  --color-captain-deep: hsl(var(--captain-deep));
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -269,6 +275,28 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+
+  /* Intro backdrop.
+
+     Set by the blocking script in <head> (src/lib/intro.ts), so this navy
+     covers the homepage from the very first frame — before React has
+     hydrated, and therefore before <CompanyIntro> can paint anything. The
+     overlay fades in on top of the same colour, so the handover is invisible,
+     and the component clears the attribute when the animation ends. */
+  html[data-intro="play"],
+  html[data-intro="play"] body {
+    overflow: hidden;
+  }
+  html[data-intro="play"] body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    /* One below the React overlay, so that paints over this rather than
+       fighting it, and above everything else on the page. */
+    z-index: 99998;
+    background: #07111f;
+    pointer-events: none;
   }
 }
 
@@ -402,13 +430,30 @@
 
   /* Marquee: duplicated track translated -50%, so it loops seamlessly.
      Pure CSS — no JS ticking a transform every frame. */
+  .marquee { overflow: hidden; }
   .marquee-track {
     display: flex;
     width: max-content;
     animation: marquee 38s linear infinite;
   }
   .marquee-slow .marquee-track { animation-duration: 60s; }
+  .marquee-fast .marquee-track { animation-duration: 24s; }
   .marquee:hover .marquee-track { animation-play-state: paused; }
+  /* Set while the reader is dragging or has just scrolled. Hover covers the
+     mouse; touch has no hover, so the component sets this instead. */
+  .marquee[data-paused="true"] .marquee-track { animation-play-state: paused; }
+
+  /* A card marquee is also a swipe list: the reader can take hold of it and
+     scroll it themselves, and the animation gets out of the way while they do.
+     Overrides the .marquee overflow above, so it has to come after it. */
+  .marquee-cards {
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* Never let a horizontal swipe turn into the browser's back gesture. */
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .marquee-cards::-webkit-scrollbar { display: none; }
 
   /* Fine dot field for dark sections. */
   .dot-grid {
@@ -430,6 +475,11 @@
 
   @media (prefers-reduced-motion: reduce) {
     .marquee-track { animation: none; }
+    /* A frozen strip of text is fine; a frozen strip of product cards hides
+       most of the rail, so a card marquee becomes a normal swipe list and
+       drops its duplicate half. */
+    .marquee-cards { overflow-x: auto; }
+    .marquee-cards .marquee-dup { display: none; }
     .lift:hover { transform: none; }
   }
 

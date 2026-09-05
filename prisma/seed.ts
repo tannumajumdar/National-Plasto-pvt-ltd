@@ -2,11 +2,12 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 import {
-  CATEGORY_SEED,
-  COLLECTION_SEED,
-  categorySlugForProduct,
+  BRAND_SEED,
+  CATALOGUE,
+  CATEGORY_TREE,
+  PREMIUM_CATEGORY_SLUGS,
   makeSku,
-} from "./seed-data";
+} from "./catalogue-data";
 
 const prisma = new PrismaClient();
 
@@ -21,95 +22,186 @@ function slugify(input: string): string {
 async function main() {
   console.log("\nSeeding National Plasto\n" + "=".repeat(46));
 
-  /* ---------------- Collections ---------------- */
+  /* ---------------- Brands (collections) ---------------- */
   const collectionIds = new Map<string, string>();
-  for (const c of COLLECTION_SEED) {
+  for (const b of BRAND_SEED) {
     const row = await prisma.collection.upsert({
-      where: { slug: c.slug },
+      where: { slug: b.slug },
       update: {
-        name: c.name,
-        tagline: c.tagline,
-        description: c.description,
-        accent: c.accent,
-        sortOrder: c.sortOrder,
+        name: b.name,
+        tagline: b.tagline,
+        description: b.description,
+        accent: b.accent,
+        sortOrder: b.sortOrder,
       },
       create: {
-        name: c.name,
-        slug: c.slug,
-        tagline: c.tagline,
-        description: c.description,
-        accent: c.accent,
-        sortOrder: c.sortOrder,
+        name: b.name,
+        slug: b.slug,
+        tagline: b.tagline,
+        description: b.description,
+        accent: b.accent,
+        sortOrder: b.sortOrder,
         isActive: true,
       },
     });
-    collectionIds.set(c.slug, row.id);
+    collectionIds.set(b.slug, row.id);
   }
-  console.log(`  collections   ${COLLECTION_SEED.length}`);
+  console.log(`  brands        ${BRAND_SEED.length}`);
 
-  /* ---------------- Categories ---------------- */
+  /* ---------------- Category tree ----------------
+     Parents first, then their children, so a child always has a parent row to
+     point at. Categories from an earlier catalogue are removed once products
+     have been re-pointed further down.                                     */
   const categoryIds = new Map<string, string>();
-  for (const cat of CATEGORY_SEED) {
-    const row = await prisma.category.upsert({
-      where: { slug: cat.slug },
-      update: { name: cat.name, description: cat.description, sortOrder: cat.sortOrder },
+  let categoryCount = 0;
+
+  for (const parent of CATEGORY_TREE) {
+    const parentRow = await prisma.category.upsert({
+      where: { slug: parent.slug },
+      update: {
+        name: parent.name,
+        description: parent.description,
+        sortOrder: parent.sortOrder,
+        parentId: null,
+        isActive: true,
+      },
       create: {
-        name: cat.name,
-        slug: cat.slug,
-        description: cat.description,
-        sortOrder: cat.sortOrder,
+        name: parent.name,
+        slug: parent.slug,
+        description: parent.description,
+        sortOrder: parent.sortOrder,
       },
     });
-    categoryIds.set(cat.slug, row.id);
-  }
-  console.log(`  categories    ${CATEGORY_SEED.length}`);
+    categoryIds.set(parent.slug, parentRow.id);
+    categoryCount++;
 
-  /* ---------------- Products ----------------
-     A few names appear in more than one collection (Avenger in NEXT and
-     NATIONAL; Florida in NATIONAL and NATIONAL SAPPHIRE). The first
-     occurrence keeps the clean slug; later ones are suffixed with their
-     collection so URLs stay unique and stable across re-seeds.          */
-  const usedSlugs = new Set<string>();
-  let created = 0;
-
-  for (const c of COLLECTION_SEED) {
-    const collectionId = collectionIds.get(c.slug)!;
-
-    for (const [index, name] of c.products.entries()) {
-      const base = slugify(name);
-      const slug = usedSlugs.has(base) ? `${base}-${c.slug}` : base;
-      usedSlugs.add(slug);
-
-      const categorySlug = categorySlugForProduct(name);
-
-      await prisma.product.upsert({
-        where: { slug },
+    for (const [i, child] of parent.children.entries()) {
+      const childRow = await prisma.category.upsert({
+        where: { slug: child.slug },
         update: {
-          name,
-          collectionId,
-          sku: makeSku(c.slug, index),
+          name: child.name,
+          parentId: parentRow.id,
+          sortOrder: parent.sortOrder * 100 + i + 1,
+          isActive: true,
         },
         create: {
-          name,
-          slug,
-          sku: makeSku(c.slug, index),
-          collectionId,
-          categoryId: categoryIds.get(categorySlug) ?? null,
-          // No price, description or specifications supplied by the source
-          // document — an admin fills these in.
-          price: null,
-          discountPrice: null,
-          stock: 0,
-          trackStock: false,
-          isPublished: true,
-          needsReview: true,
-          metaTitle: `${name} — ${c.name} Collection | National Plasto`,
+          name: child.name,
+          slug: child.slug,
+          parentId: parentRow.id,
+          sortOrder: parent.sortOrder * 100 + i + 1,
         },
       });
-      created++;
+      categoryIds.set(child.slug, childRow.id);
+      categoryCount++;
     }
   }
-  console.log(`  products      ${created}`);
+  console.log(`  categories    ${categoryCount} (${CATEGORY_TREE.length} groups + headings)`);
+
+  /* ---------------- Products ----------------
+     Names repeat across brands (Avenger in NEXT and NATIONAL; Flora in
+     NATIONAL, SAPPHIRE and CAPTAIN), so the first occurrence keeps the clean
+     slug and later ones are suffixed with their brand. Iteration order is
+     fixed by CATALOGUE, so slugs stay stable across re-seeds.             */
+  const usedSlugs = new Set<string>();
+  const plan: Array<{
+    name: string;
+    slug: string;
+    sku: string;
+    brandName: string;
+    collectionId: string;
+    categoryId: string | null;
+    isPremium: boolean;
+  }> = [];
+
+  for (const brand of CATALOGUE) {
+    const meta = BRAND_SEED.find((b) => b.slug === brand.brand)!;
+    const collectionId = collectionIds.get(brand.brand)!;
+    let index = 0;
+
+    for (const group of brand.groups) {
+      const categoryId = categoryIds.get(group.category) ?? null;
+      const isPremium = PREMIUM_CATEGORY_SLUGS.includes(group.category);
+
+      for (const name of group.products) {
+        const base = slugify(name);
+        const slug = usedSlugs.has(base) ? `${base}-${brand.brand}` : base;
+        usedSlugs.add(slug);
+
+        plan.push({
+          name,
+          slug,
+          sku: makeSku(brand.brand, index),
+          brandName: meta.name,
+          collectionId,
+          categoryId,
+          isPremium,
+        });
+        index++;
+      }
+    }
+  }
+
+  /* Retire the previous catalogue FIRST — its SKUs sit on the numbers this
+     list is about to claim. Order history is unaffected: order_items snapshot
+     the name, slug and price, and their productId is ON DELETE SET NULL.   */
+  const retired = await prisma.product.deleteMany({
+    where: { slug: { notIn: plan.map((p) => p.slug) } },
+  });
+  if (retired.count) {
+    console.log(`  retired       ${retired.count} products from the previous list`);
+  }
+
+  /* Survivors keep their row (and any pricing or imagery an admin added) but
+     their old SKU may be the number this list assigns to a different product.
+     Park every survivor on a temporary SKU so the renumbering below cannot
+     collide part-way through. */
+  const survivors = await prisma.product.findMany({ select: { id: true } });
+  for (const s of survivors) {
+    await prisma.product.update({
+      where: { id: s.id },
+      data: { sku: `TMP-${s.id}` },
+    });
+  }
+
+  for (const p of plan) {
+    await prisma.product.upsert({
+      where: { slug: p.slug },
+      update: {
+        name: p.name,
+        sku: p.sku,
+        collectionId: p.collectionId,
+        categoryId: p.categoryId,
+        isPremium: p.isPremium,
+        isPublished: true,
+      },
+      create: {
+        name: p.name,
+        slug: p.slug,
+        sku: p.sku,
+        collectionId: p.collectionId,
+        categoryId: p.categoryId,
+        isPremium: p.isPremium,
+        // No price, description or specifications supplied by the source
+        // document — an admin fills these in.
+        price: null,
+        discountPrice: null,
+        stock: 0,
+        trackStock: false,
+        isPublished: true,
+        needsReview: true,
+        metaTitle: `${p.name} — ${p.brandName} Collection | National Plasto`,
+      },
+    });
+  }
+  console.log(`  products      ${plan.length}`);
+
+  const keepCategories = [...categoryIds.values()];
+  const staleCategories = await prisma.category.deleteMany({
+    where: { id: { notIn: keepCategories } },
+  });
+  if (staleCategories.count) {
+    console.log(`  retired       ${staleCategories.count} categories`);
+  }
 
   /* ---------------- Admin user ---------------- */
   const adminEmail = process.env.SEED_ADMIN_EMAIL || "admin@nationalplasto.com";
@@ -176,7 +268,7 @@ async function main() {
       value: {
         heading: "Built in Kolkata, made for everyday Indian homes",
         intro:
-          "National Plasto Pvt. Ltd. is a plastic furniture and household products manufacturer based in Kolkata, West Bengal. We design and produce across three collections — NEXT, NATIONAL and NATIONAL SAPPHIRE — each built to the same standard of durability and finish.",
+          "National Plasto Pvt. Ltd. is a plastic furniture and household products manufacturer based in Kolkata, West Bengal. We design and produce across four brands — NEXT, NATIONAL, NATIONAL SAPPHIRE and CAPTAIN — each built to the same standard of durability and finish.",
         vision:
           "To be recognised across eastern India as the plastic products brand that customers trust for everyday durability and honest value.",
         mission:
@@ -193,10 +285,10 @@ async function main() {
         subheading:
           "Six commitments that shape how we design, manufacture and support every product.",
         items: [
-          { icon: "BadgeCheck", title: "Quality Products", body: "Consistent finish and build standards applied across all three collections." },
+          { icon: "BadgeCheck", title: "Quality Products", body: "Consistent finish and build standards applied across all four brands." },
           { icon: "ShieldCheck", title: "Durable Materials", body: "Products engineered to hold up to daily use in real Indian homes." },
           { icon: "Sparkles", title: "Modern Designs", body: "Forms and formats designed around how people actually live today." },
-          { icon: "LayoutGrid", title: "Wide Product Range", body: "Three collections spanning seating, storage, tables and more." },
+          { icon: "LayoutGrid", title: "Wide Product Range", body: "Four brands spanning seating, storage, tables and more." },
           { icon: "HeartHandshake", title: "Customer Satisfaction", body: "We stand behind what we make and support customers after the sale." },
           { icon: "Truck", title: "Reliable Service", body: "Dependable dispatch and clear communication from order to delivery." },
         ],

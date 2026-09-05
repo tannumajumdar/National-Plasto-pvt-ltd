@@ -41,6 +41,9 @@ export interface AdminCategory {
   isActive: boolean;
   sortOrder: number;
   productCount: number;
+  parentId: string | null;
+  /** Name of the group this heading sits under, for the card subtitle. */
+  parentName: string | null;
 }
 
 interface CategoryFormValues {
@@ -48,6 +51,7 @@ interface CategoryFormValues {
   slug: string;
   description: string;
   image: string;
+  parentId: string;
   isActive: boolean;
   sortOrder: string;
 }
@@ -58,6 +62,15 @@ export function CategoriesManager({ categories }: { categories: AdminCategory[] 
   const [creating, setCreating] = React.useState(false);
   const [pendingDelete, setPendingDelete] = React.useState<AdminCategory | null>(null);
   const [busy, setBusy] = React.useState(false);
+
+  // A heading cannot itself become a parent, so only groups are offered.
+  const parentOptions = React.useMemo(
+    () =>
+      categories
+        .filter((c) => c.parentId === null)
+        .map((c) => ({ id: c.id, name: c.name })),
+    [categories],
+  );
 
   async function toggleActive(category: AdminCategory) {
     try {
@@ -128,6 +141,11 @@ export function CategoriesManager({ categories }: { categories: AdminCategory[] 
                   <CardContent className="flex h-full flex-col p-5">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
+                        {category.parentName && (
+                          <p className="truncate text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            {category.parentName}
+                          </p>
+                        )}
                         <h3 className="truncate text-base font-bold tracking-tight">
                           {category.name}
                         </h3>
@@ -209,6 +227,7 @@ export function CategoriesManager({ categories }: { categories: AdminCategory[] 
       <CategoryDialog
         open={creating || editing !== null}
         category={editing}
+        parentOptions={parentOptions}
         onOpenChange={(open) => {
           if (!open) {
             setCreating(false);
@@ -251,11 +270,14 @@ export function CategoriesManager({ categories }: { categories: AdminCategory[] 
 function CategoryDialog({
   open,
   category,
+  parentOptions,
   onOpenChange,
   onSaved,
 }: {
   open: boolean;
   category: AdminCategory | null;
+  /** Top-level categories only — the tree nests one level deep. */
+  parentOptions: { id: string; name: string }[];
   onOpenChange: (open: boolean) => void;
   onSaved: () => void;
 }) {
@@ -276,6 +298,7 @@ function CategoryDialog({
       slug: "",
       description: "",
       image: "",
+      parentId: "",
       isActive: true,
       sortOrder: "0",
     },
@@ -288,6 +311,7 @@ function CategoryDialog({
       slug: category?.slug ?? "",
       description: category?.description ?? "",
       image: category?.image ?? "",
+      parentId: category?.parentId ?? "",
       isActive: category?.isActive ?? true,
       sortOrder: String(category?.sortOrder ?? 0),
     });
@@ -364,9 +388,34 @@ function CategoryDialog({
             />
           </Field>
 
-          <Field label="Sort order" htmlFor="cat-sort" error={errors.sortOrder?.message}>
-            <Input id="cat-sort" type="number" min="0" {...register("sortOrder")} />
-          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Parent category"
+              htmlFor="cat-parent"
+              error={errors.parentId?.message}
+            >
+              <select
+                id="cat-parent"
+                className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                {...register("parentId")}
+              >
+                <option value="">None — this is a top-level group</option>
+                {parentOptions.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                Headings such as “Deluxe Arm Chairs” sit under a group such as
+                “Chairs”. Categories nest one level only.
+              </p>
+            </Field>
+
+            <Field label="Sort order" htmlFor="cat-sort" error={errors.sortOrder?.message}>
+              <Input id="cat-sort" type="number" min="0" {...register("sortOrder")} />
+            </Field>
+          </div>
 
           <div className="space-y-2">
             <Label>Category image</Label>

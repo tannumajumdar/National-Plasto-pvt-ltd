@@ -84,6 +84,8 @@ export async function createProduct(raw: unknown): Promise<ActionResult> {
       isFeatured: data.isFeatured,
       isNew: data.isNew,
       isBestSeller: data.isBestSeller,
+      isPremium: data.isPremium,
+      isLimitedEdition: data.isLimitedEdition,
       isPublished: data.isPublished,
       needsReview: computeNeedsReview({
         price: data.price,
@@ -165,6 +167,8 @@ export async function updateProduct(id: string, raw: unknown): Promise<ActionRes
         isFeatured: data.isFeatured,
         isNew: data.isNew,
         isBestSeller: data.isBestSeller,
+        isPremium: data.isPremium,
+        isLimitedEdition: data.isLimitedEdition,
         isPublished: data.isPublished,
         needsReview: computeNeedsReview({
           price: data.price,
@@ -263,6 +267,10 @@ export async function bulkUpdateProducts(raw: unknown): Promise<ActionResult> {
     unmarkNew: { isNew: false },
     markBestSeller: { isBestSeller: true },
     unmarkBestSeller: { isBestSeller: false },
+    markPremium: { isPremium: true },
+    unmarkPremium: { isPremium: false },
+    markLimitedEdition: { isLimitedEdition: true },
+    unmarkLimitedEdition: { isLimitedEdition: false },
   } satisfies Record<string, Prisma.ProductUpdateManyMutationInput>;
 
   await prisma.product.updateMany({

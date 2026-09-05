@@ -8,7 +8,7 @@ import { ProductFilters } from "@/components/products/product-filters";
 import { ProductGrid } from "@/components/products/product-grid";
 import { SortSelect } from "@/components/products/sort-select";
 import { parseProductFilters, type SearchParamsInput } from "@/lib/filters";
-import { getCategories, getCollections } from "@/lib/queries/catalogue";
+import { getCategoryTree, getCollections } from "@/lib/queries/catalogue";
 import { getPriceBounds, getProducts } from "@/lib/queries/products";
 
 export const metadata: Metadata = {
@@ -48,7 +48,7 @@ export default async function SearchPage({
   const [result, collections, categories, priceBounds] = await Promise.all([
     getProducts(filters),
     getCollections(),
-    getCategories(),
+    getCategoryTree(),
     getPriceBounds(),
   ]);
 

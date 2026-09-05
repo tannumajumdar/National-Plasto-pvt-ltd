@@ -13,7 +13,10 @@ export const metadata: Metadata = {
 export default async function AdminCategoriesPage() {
   const rows = await prisma.category.findMany({
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    include: { _count: { select: { products: true } } },
+    include: {
+      _count: { select: { products: true } },
+      parent: { select: { name: true } },
+    },
   });
 
   const categories: AdminCategory[] = rows.map((c) => ({
@@ -25,13 +28,15 @@ export default async function AdminCategoriesPage() {
     isActive: c.isActive,
     sortOrder: c.sortOrder,
     productCount: c._count.products,
+    parentId: c.parentId,
+    parentName: c.parent?.name ?? null,
   }));
 
   return (
     <>
       <AdminTopbar
         title="Categories"
-        description="Group products by type — chairs, tables, storage — across every collection"
+        description="Groups and the headings beneath them — Chairs › Deluxe Arm Chairs — shared across every brand"
         crumbs={[{ label: "Categories" }]}
         menuSlot={<AdminMenuButton />}
       />

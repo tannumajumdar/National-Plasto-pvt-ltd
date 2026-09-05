@@ -7,12 +7,13 @@
  * admin uploads real imagery.
  */
 
-export type AccentToken = "next" | "national" | "sapphire";
+export type AccentToken = "next" | "national" | "sapphire" | "captain";
 
 const ACCENT_STOPS: Record<AccentToken, [string, string, string]> = {
   next: ["#0B3F86", "#1289E0", "#5CC7F5"],
   national: ["#B25213", "#F08A1D", "#FFC24A"],
   sapphire: ["#2B2A8C", "#5B52D6", "#9A8CF0"],
+  captain: ["#0E5A4A", "#12876E", "#4FC3A1"],
 };
 
 /** Stable 32-bit hash — same name always yields the same artwork. */

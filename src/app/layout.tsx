@@ -4,6 +4,7 @@ import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { SITE } from "@/lib/constants";
+import { INTRO_INIT_SCRIPT } from "@/lib/intro";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 import "./globals.css";
@@ -101,6 +102,14 @@ export default function RootLayout({
           this will add.
         */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        {/*
+          Decides whether the intro plays and paints its backdrop with the
+          first frame. It has to be inline and blocking for the same reason
+          the theme script does: <CompanyIntro> is a client component, so
+          anything it paints arrives after hydration — which is why the intro
+          used to appear on top of an already-visible homepage.
+        */}
+        <script dangerouslySetInnerHTML={{ __html: INTRO_INIT_SCRIPT }} />
       </head>
       <body className={`${inter.variable} ${jakarta.variable} antialiased`}>
         <ThemeProvider>

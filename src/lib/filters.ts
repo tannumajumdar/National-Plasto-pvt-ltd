@@ -45,6 +45,8 @@ export function parseProductFilters(sp: SearchParamsInput): ProductFilters {
     featured: flag(sp.featured),
     isNew: flag(sp.isNew),
     bestSeller: flag(sp.bestSeller),
+    premium: flag(sp.premium),
+    limitedEdition: flag(sp.limitedEdition),
     sort: sort && VALID_SORTS.has(sort) ? sort : undefined,
     page: Math.max(1, int(sp.page) ?? 1),
   };
@@ -59,5 +61,7 @@ export function describeFilters(f: ProductFilters): string[] {
   if (f.featured) parts.push("Featured");
   if (f.isNew) parts.push("New arrivals");
   if (f.bestSeller) parts.push("Best sellers");
+  if (f.premium) parts.push("Premium");
+  if (f.limitedEdition) parts.push("Limited edition");
   return parts;
 }

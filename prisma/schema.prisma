@@ -1,5 +1,5 @@
-// National Plasto Pvt. Ltd. — data model
-// Money is stored as INTEGER PAISE (₹1 = 100) so totals are always exact
+// National Plasto Pvt. Ltd. â data model
+// Money is stored as INTEGER PAISE (â¹1 = 100) so totals are always exact
 // and serialise cleanly across the server/client boundary.
 
 generator client {
@@ -71,7 +71,7 @@ model Address {
 // Catalogue
 // ------------------------------------------------------------------
 
-/// A brand-level collection: NEXT, NATIONAL, NATIONAL SAPPHIRE
+/// A brand-level collection: NEXT, NATIONAL, NATIONAL SAPPHIRE, CAPTAIN
 model Collection {
   id          String  @id @default(cuid())
   name        String  @unique
@@ -79,7 +79,7 @@ model Collection {
   tagline     String?
   description String? @db.Text
   bannerImage String?
-  /// Signature theme token used by the UI: "next" | "national" | "sapphire"
+  /// Signature theme token used by the UI: "next" | "national" | "sapphire" | "captain"
   accent      String  @default("national")
   isActive    Boolean @default(true)
   sortOrder   Int     @default(0)
@@ -94,18 +94,28 @@ model Collection {
 
 model Category {
   id          String  @id @default(cuid())
-  name        String  @unique
+  name        String
   slug        String  @unique
   description String? @db.Text
   image       String?
   isActive    Boolean @default(true)
   sortOrder   Int     @default(0)
 
+  /// Two-level tree. A parent is a top-level group (Chairs, Tables); a child is
+  /// a brand-sheet heading (Deluxe Arm Chairs). Products hang off whichever
+  /// level the source catalogue names, so a parent may hold products directly
+  /// where a brand supplies no finer split (e.g. SAPPHIRE simply lists STOOLS).
+  parentId String?
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryTree")
+
   products Product[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([parentId])
+  @@index([sortOrder])
   @@map("categories")
 }
 
@@ -144,6 +154,11 @@ model Product {
   isFeatured   Boolean @default(false)
   isNew        Boolean @default(false)
   isBestSeller Boolean @default(false)
+  /// Derived on seed/save from the product's category (PREMIUM / DELUXE /
+  /// HEAVY GUARANTEE headings), and overridable by an admin.
+  isPremium    Boolean @default(false)
+  /// Purely editorial — an admin marks a short-run piece by hand.
+  isLimitedEdition Boolean @default(false)
   isPublished  Boolean @default(true)
 
   /// Cached aggregates, recomputed when a review is written.
@@ -168,6 +183,8 @@ model Product {
   @@index([isFeatured])
   @@index([isNew])
   @@index([isBestSeller])
+  @@index([isPremium])
+  @@index([isLimitedEdition])
   @@index([isPublished])
   @@index([name])
   @@index([hasPrice, sortPrice])

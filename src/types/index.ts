@@ -29,6 +29,10 @@ export interface ProductCardDTO {
   isFeatured: boolean;
   isNew: boolean;
   isBestSeller: boolean;
+  /** Set from the source catalogue's PREMIUM / DELUXE / HEAVY GUARANTEE headings. */
+  isPremium: boolean;
+  /** Editorial — an admin marks a short-run piece by hand. */
+  isLimitedEdition: boolean;
   ratingAvg: number;
   reviewCount: number;
   needsReview: boolean;
@@ -69,6 +73,30 @@ export interface CategoryDTO {
   name: string;
   slug: string;
   productCount: number;
+}
+
+/** One node of the Brand → Category → Sub-category tree. */
+export interface CategoryNodeDTO extends CategoryDTO {
+  description: string | null;
+  /** Sub-categories that actually hold products in the current scope. */
+  children: CategoryDTO[];
+  /** Products hanging off this node directly, not off a child. */
+  directCount: number;
+}
+
+/** A brand and the slice of the category tree its products occupy. */
+export interface BrandCatalogueDTO {
+  brand: CollectionDTO;
+  groups: CategoryNodeDTO[];
+}
+
+/** Compact shape for the header menu: brand plus its top-level groups. */
+export interface CatalogueNavBrand {
+  name: string;
+  slug: string;
+  accent: AccentToken;
+  productCount: number;
+  groups: { name: string; slug: string; productCount: number }[];
 }
 
 /* ---------------- Cart ---------------- */
@@ -154,6 +182,8 @@ export interface ProductFilters {
   featured?: boolean;
   isNew?: boolean;
   bestSeller?: boolean;
+  premium?: boolean;
+  limitedEdition?: boolean;
   sort?: string;
   page?: number;
 }

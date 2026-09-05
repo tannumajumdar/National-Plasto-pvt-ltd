@@ -55,12 +55,16 @@ export const DISTRIBUTOR_CONTACT = {
    Collections — the three brand lines
    ------------------------------------------------------------------ */
 
-export type CollectionSlug = "next" | "national" | "national-sapphire";
+export type CollectionSlug =
+  | "next"
+  | "national"
+  | "national-sapphire"
+  | "captain";
 
 export interface CollectionTheme {
   slug: CollectionSlug;
   name: string;
-  accent: "next" | "national" | "sapphire";
+  accent: "next" | "national" | "sapphire" | "captain";
   /** Tailwind-ready gradient stops using the collection's theme tokens. */
   gradient: string;
   ring: string;
@@ -106,6 +110,18 @@ export const COLLECTIONS: Record<CollectionSlug, CollectionTheme> = {
     tagline: "Our premium tier, finished to a higher standard",
     description:
       "NATIONAL SAPPHIRE is the elevated line — a focused selection of premium pieces for customers who want a more refined finish and presence.",
+  },
+  captain: {
+    slug: "captain",
+    name: "CAPTAIN",
+    accent: "captain",
+    gradient: "from-captain-deep via-captain to-captain",
+    ring: "ring-captain/35",
+    text: "text-captain",
+    bgSoft: "bg-captain/10",
+    tagline: "A compact, value-focused range",
+    description:
+      "CAPTAIN is our tightest range — a short, deliberately edited selection covering the formats a household reaches for most.",
   },
 };
 

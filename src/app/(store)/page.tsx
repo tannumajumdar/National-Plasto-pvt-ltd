@@ -6,9 +6,11 @@ import { CtaBand } from "@/components/home/cta-band";
 import { FeatureBar } from "@/components/home/feature-bar";
 import { Hero } from "@/components/home/hero";
 import { IndustriesServe } from "@/components/home/industries-serve";
+import { PremiumHighlights } from "@/components/home/premium-highlights";
 import { StatsBand } from "@/components/home/stats-band";
 import { DistributorSection } from "@/components/DistributorSection";
 import { SITE } from "@/lib/constants";
+import { getHighlightProducts } from "@/lib/queries/products";
 
 export const metadata: Metadata = {
   title: `${SITE.name} — ${SITE.tagline}`,
@@ -18,7 +20,9 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
-export default function HomePage() {
+export default async function HomePage() {
+  const highlights = await getHighlightProducts(10);
+
   return (
     <>
       {/* Hero Banner */}
@@ -32,6 +36,9 @@ export default function HomePage() {
 
       {/* Our Products Section */}
       <CollectionsShowcase />
+
+      {/* Premium & Limited Edition Rail */}
+      <PremiumHighlights products={highlights} />
 
       {/* Impact Stats Banner */}
       <StatsBand />

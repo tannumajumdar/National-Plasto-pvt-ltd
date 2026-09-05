@@ -28,7 +28,10 @@ export default async function EditProductPage({
       },
     }),
     prisma.collection.findMany({ orderBy: { sortOrder: "asc" }, select: { id: true, name: true } }),
-    prisma.category.findMany({ orderBy: { sortOrder: "asc" }, select: { id: true, name: true } }),
+    prisma.category.findMany({
+      orderBy: { sortOrder: "asc" },
+      select: { id: true, name: true, parent: { select: { name: true } } },
+    }),
   ]);
 
   if (!product) notFound();
@@ -49,6 +52,8 @@ export default async function EditProductPage({
     isFeatured: product.isFeatured,
     isNew: product.isNew,
     isBestSeller: product.isBestSeller,
+    isPremium: product.isPremium,
+    isLimitedEdition: product.isLimitedEdition,
     isPublished: product.isPublished,
     needsReview: product.needsReview,
     metaTitle: product.metaTitle,

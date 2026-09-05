@@ -19,6 +19,7 @@ export async function POST(request: Request) {
       id: true, name: true, slug: true, sku: true, shortDescription: true,
       price: true, discountPrice: true, stock: true, trackStock: true,
       isFeatured: true, isNew: true, isBestSeller: true,
+      isPremium: true, isLimitedEdition: true,
       ratingAvg: true, reviewCount: true, needsReview: true,
       images: { select: { id: true, url: true, alt: true }, orderBy: { sortOrder: "asc" }, take: 2 },
       collection: { select: { name: true, slug: true, accent: true } },

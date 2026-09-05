@@ -44,17 +44,19 @@ import { useCartDrawer } from "@/hooks/use-cart-drawer";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useScrolled } from "@/hooks/use-scroll-position";
 import { useSession, type SessionUser } from "@/hooks/use-session";
-import { COLLECTION_LIST, MAIN_NAV } from "@/lib/constants";
+import { MAIN_NAV, themeForAccent } from "@/lib/constants";
 import { cn, initials } from "@/lib/utils";
+import type { CatalogueNavBrand } from "@/types";
 
 export type HeaderUser = SessionUser;
 
-export function Header() {
+export function Header({ catalogue = [] }: { catalogue?: CatalogueNavBrand[] }) {
   const { user } = useSession();
   const pathname = usePathname();
   const scrolled = useScrolled(10);
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const [productsOpen, setProductsOpen] = React.useState(false);
 
   const cartCount = useCartCount();
   const openCart = useCartDrawer((s) => s.setOpen);
@@ -165,8 +167,14 @@ export function Header() {
             <nav className="hidden items-center gap-2.5 xl:gap-4 2xl:gap-6 xl:flex shrink-0 whitespace-nowrap ml-3 xl:ml-6" aria-label="Main">
               {MAIN_NAV.map((item) => {
                 const isSecondary = item.label === "INDUSTRIES" || item.label === "QUALITY" || item.label === "INFRASTRUCTURE";
+                const hasMenu = item.label === "PRODUCTS" && catalogue.length > 0;
                 return (
-                  <div key={item.href} className={cn("relative group shrink-0", isSecondary && "hidden 2xl:block")}>
+                  <div
+                    key={item.href}
+                    className={cn("relative group shrink-0", isSecondary && "hidden 2xl:block")}
+                    onMouseEnter={hasMenu ? () => setProductsOpen(true) : undefined}
+                    onMouseLeave={hasMenu ? () => setProductsOpen(false) : undefined}
+                  >
                     <Link
                       href={item.href}
                       className={cn(
@@ -175,10 +183,18 @@ export function Header() {
                           ? "text-[#c8102e]"
                           : "text-slate-700 hover:text-[#c8102e] dark:text-slate-200 dark:hover:text-[#c8102e]",
                       )}
+                      aria-expanded={hasMenu ? productsOpen : undefined}
+                      aria-haspopup={hasMenu ? "true" : undefined}
+                      onFocus={hasMenu ? () => setProductsOpen(true) : undefined}
                     >
                       {item.label}
                       {item.label === "PRODUCTS" && (
-                        <ChevronDown className="size-4 opacity-75 shrink-0" />
+                        <ChevronDown
+                          className={cn(
+                            "size-4 shrink-0 opacity-75 transition-transform duration-200",
+                            hasMenu && productsOpen && "rotate-180",
+                          )}
+                        />
                       )}
                     </Link>
                     {isActive(item.href) && (
@@ -186,6 +202,13 @@ export function Header() {
                         layoutId="nav-underline"
                         className="absolute -bottom-1 left-0 h-0.5 w-full bg-[#c8102e] rounded-full"
                         transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                      />
+                    )}
+                    {hasMenu && (
+                      <ProductsMegaMenu
+                        open={productsOpen}
+                        catalogue={catalogue}
+                        onNavigate={() => setProductsOpen(false)}
                       />
                     )}
                   </div>
@@ -320,11 +343,110 @@ export function Header() {
         </div>
       </header>
 
-      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} user={user} />
+      <MobileMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        user={user}
+        catalogue={catalogue}
+      />
       <SearchOverlay open={searchOpen} onOpenChange={setSearchOpen} />
 
       <MobileTabBar onSearch={() => setSearchOpen(true)} />
     </>
+  );
+}
+
+/**
+ * The catalogue, one panel deep: every brand and the groups it makes.
+ * Sub-categories live on /products — putting all 29 headings in a hover menu
+ * would be unreadable, and the page can lay them out properly.
+ */
+function ProductsMegaMenu({
+  open,
+  catalogue,
+  onNavigate,
+}: {
+  open: boolean;
+  catalogue: CatalogueNavBrand[];
+  onNavigate: () => void;
+}) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 8 }}
+          transition={{ duration: 0.18, ease: EASE }}
+          // pt-3 keeps a hoverable bridge between the trigger and the panel
+          className="absolute left-1/2 top-full z-50 w-[min(64rem,90vw)] -translate-x-1/2 pt-3"
+        >
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-float dark:border-slate-800 dark:bg-slate-950">
+            <div className="grid gap-px bg-slate-200 dark:bg-slate-800 sm:grid-cols-2 lg:grid-cols-4">
+              {catalogue.map((brand) => {
+                const theme = themeForAccent(brand.accent);
+                return (
+                  <div key={brand.slug} className="bg-white p-5 dark:bg-slate-950">
+                    <Link
+                      href={`/products?collection=${brand.slug}`}
+                      onClick={onNavigate}
+                      className="group/brand flex items-baseline justify-between gap-2"
+                    >
+                      <span
+                        className={cn(
+                          "text-sm font-extrabold uppercase tracking-[0.12em]",
+                          theme.text,
+                        )}
+                      >
+                        {brand.name}
+                      </span>
+                      <span className="text-[11px] tabular-nums text-slate-400">
+                        {brand.productCount}
+                      </span>
+                    </Link>
+
+                    <ul className="mt-3 space-y-1">
+                      {brand.groups.map((group) => (
+                        <li key={group.slug}>
+                          <Link
+                            href={`/products?collection=${brand.slug}&category=${group.slug}`}
+                            onClick={onNavigate}
+                            className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-[13px] text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#c8102e] dark:text-slate-300 dark:hover:bg-slate-900"
+                          >
+                            <span className="truncate">{group.name}</span>
+                            <span className="shrink-0 text-[11px] tabular-nums text-slate-400">
+                              {group.productCount}
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center justify-between gap-4 border-t border-slate-200 bg-slate-50 px-5 py-3 dark:border-slate-800 dark:bg-slate-900">
+              <Link
+                href="/products?premium=1"
+                onClick={onNavigate}
+                className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-600 transition-colors hover:text-[#c8102e] dark:text-slate-300"
+              >
+                Premium &amp; Limited Edition
+              </Link>
+              <Link
+                href="/products"
+                onClick={onNavigate}
+                className="group/all inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#c8102e]"
+              >
+                Full catalogue
+                <ArrowRight className="size-3.5 transition-transform duration-300 group-hover/all:translate-x-1" />
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -354,11 +476,15 @@ function MobileMenu({
   open,
   onClose,
   user,
+  catalogue,
 }: {
   open: boolean;
   onClose: () => void;
   user: SessionUser | null;
+  catalogue: CatalogueNavBrand[];
 }) {
+  const [openBrand, setOpenBrand] = React.useState<string | null>(null);
+
   return (
     <AnimatePresence>
       {open && (
@@ -414,20 +540,81 @@ function MobileMenu({
 
             <div className="px-4 pb-2">
               <p className="px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Collections
+                Brands
               </p>
+              {/* One tap opens a brand; its categories are one level in, so the
+                  drawer never becomes a 29-row scroll. */}
               <div className="grid gap-2">
-                {COLLECTION_LIST.map((c) => (
-                  <Link
-                    key={c.slug}
-                    href={`/collections/${c.slug}`}
-                    onClick={onClose}
-                    className="rounded-2xl border border-border px-4 py-3 transition-colors hover:bg-secondary"
-                  >
-                    <span className={cn("text-sm font-bold", c.text)}>{c.name}</span>
-                    <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{c.tagline}</p>
-                  </Link>
-                ))}
+                {catalogue.map((brand) => {
+                  const theme = themeForAccent(brand.accent);
+                  const expanded = openBrand === brand.slug;
+
+                  return (
+                    <div
+                      key={brand.slug}
+                      className="overflow-hidden rounded-2xl border border-border"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setOpenBrand(expanded ? null : brand.slug)}
+                        aria-expanded={expanded}
+                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary"
+                      >
+                        <span className="min-w-0">
+                          <span className={cn("block text-sm font-bold", theme.text)}>
+                            {brand.name}
+                          </span>
+                          <span className="mt-0.5 block text-xs text-muted-foreground">
+                            {brand.productCount} products
+                          </span>
+                        </span>
+                        <ChevronDown
+                          className={cn(
+                            "size-4 shrink-0 text-muted-foreground transition-transform duration-200",
+                            expanded && "rotate-180",
+                          )}
+                        />
+                      </button>
+
+                      <AnimatePresence initial={false}>
+                        {expanded && (
+                          <motion.ul
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.22, ease: EASE }}
+                            className="overflow-hidden border-t border-border bg-secondary/40"
+                          >
+                            {brand.groups.map((group) => (
+                              <li key={group.slug}>
+                                <Link
+                                  href={`/products?collection=${brand.slug}&category=${group.slug}`}
+                                  onClick={onClose}
+                                  className="flex items-center justify-between gap-3 px-5 py-2.5 text-sm transition-colors hover:bg-secondary"
+                                >
+                                  <span className="truncate">{group.name}</span>
+                                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                                    {group.productCount}
+                                  </span>
+                                </Link>
+                              </li>
+                            ))}
+                            <li>
+                              <Link
+                                href={`/products?collection=${brand.slug}`}
+                                onClick={onClose}
+                                className="flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-accent"
+                              >
+                                All {brand.name}
+                                <ArrowRight className="size-3.5" />
+                              </Link>
+                            </li>
+                          </motion.ul>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

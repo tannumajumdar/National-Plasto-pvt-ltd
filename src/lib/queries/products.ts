@@ -32,6 +32,8 @@ const cardSelect = {
   isFeatured: true,
   isNew: true,
   isBestSeller: true,
+  isPremium: true,
+  isLimitedEdition: true,
   ratingAvg: true,
   reviewCount: true,
   needsReview: true,
@@ -67,6 +69,8 @@ export function mapProductCard(p: CardRow): ProductCardDTO {
     isFeatured: p.isFeatured,
     isNew: p.isNew,
     isBestSeller: p.isBestSeller,
+    isPremium: p.isPremium,
+    isLimitedEdition: p.isLimitedEdition,
     ratingAvg: p.ratingAvg,
     reviewCount: p.reviewCount,
     needsReview: p.needsReview,
@@ -96,7 +100,16 @@ function buildWhere(f: ProductFilters): Prisma.ProductWhereInput {
   }
 
   if (f.collection?.length) AND.push({ collection: { slug: { in: f.collection } } });
-  if (f.category?.length) AND.push({ category: { slug: { in: f.category } } });
+  // A category slug may name a top-level group (Chairs) or a sub-category
+  // (Deluxe Arm Chairs); selecting the group has to include everything under it.
+  if (f.category?.length) {
+    AND.push({
+      OR: [
+        { category: { slug: { in: f.category } } },
+        { category: { parent: { slug: { in: f.category } } } },
+      ],
+    });
+  }
 
   // sortPrice already holds the effective (post-discount) price, so the
   // range filter is a simple comparison. hasPrice keeps unpriced products
@@ -115,6 +128,8 @@ function buildWhere(f: ProductFilters): Prisma.ProductWhereInput {
   if (f.featured) AND.push({ isFeatured: true });
   if (f.isNew) AND.push({ isNew: true });
   if (f.bestSeller) AND.push({ isBestSeller: true });
+  if (f.premium) AND.push({ isPremium: true });
+  if (f.limitedEdition) AND.push({ isLimitedEdition: true });
 
   if (AND.length) where.AND = AND;
   return where;
@@ -271,6 +286,75 @@ export async function getBestSellers(take = 8): Promise<ProductCardDTO[]> {
   });
     return rows.map(mapProductCard);
   }, []);
+}
+
+export async function getLimitedEditionProducts(take = 12): Promise<ProductCardDTO[]> {
+  return safeRead(async () => {
+    const rows = await prisma.product.findMany({
+      where: { isPublished: true, isLimitedEdition: true },
+      select: cardSelect,
+      orderBy: [{ updatedAt: "desc" }, { name: "asc" }],
+      take,
+    });
+    return rows.map(mapProductCard);
+  }, []);
+}
+
+export async function getPremiumProducts(take = 12): Promise<ProductCardDTO[]> {
+  return safeRead(async () => {
+    const rows = await prisma.product.findMany({
+      where: { isPublished: true, isPremium: true, isLimitedEdition: false },
+      select: cardSelect,
+      // Products with real imagery and a price look finished, so they lead.
+      orderBy: [
+        { isFeatured: "desc" },
+        { needsReview: "asc" },
+        { collection: { sortOrder: "asc" } },
+        { name: "asc" },
+      ],
+      // Over-fetch: the caller spreads the rail across brands.
+      take: take * 6,
+    });
+    return rows.map(mapProductCard);
+  }, []);
+}
+
+/**
+ * The homepage "Premium & Limited Edition" rail.
+ *
+ * Limited-edition pieces lead — an admin picked those by hand. Premium fills
+ * whatever is left, dealt round-robin by brand so one brand (NATIONAL alone
+ * holds 71 premium products) cannot take the whole row.
+ */
+export async function getHighlightProducts(take = 8): Promise<ProductCardDTO[]> {
+  const [limited, premium] = await Promise.all([
+    getLimitedEditionProducts(take),
+    getPremiumProducts(take),
+  ]);
+
+  const picked = limited.slice(0, take);
+  const used = new Set(picked.map((p) => p.id));
+
+  const byBrand = new Map<string, ProductCardDTO[]>();
+  for (const p of premium) {
+    if (used.has(p.id)) continue;
+    const bucket = byBrand.get(p.collection.slug);
+    if (bucket) bucket.push(p);
+    else byBrand.set(p.collection.slug, [p]);
+  }
+
+  const queues = [...byBrand.values()];
+  let round = 0;
+  while (picked.length < take && queues.some((q) => q.length > round)) {
+    for (const q of queues) {
+      if (picked.length >= take) break;
+      const next = q[round];
+      if (next) picked.push(next);
+    }
+    round++;
+  }
+
+  return picked;
 }
 
 /**

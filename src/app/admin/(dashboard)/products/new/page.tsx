@@ -13,7 +13,10 @@ export const metadata: Metadata = {
 export default async function NewProductPage() {
   const [collections, categories] = await Promise.all([
     prisma.collection.findMany({ orderBy: { sortOrder: "asc" }, select: { id: true, name: true } }),
-    prisma.category.findMany({ orderBy: { sortOrder: "asc" }, select: { id: true, name: true } }),
+    prisma.category.findMany({
+      orderBy: { sortOrder: "asc" },
+      select: { id: true, name: true, parent: { select: { name: true } } },
+    }),
   ]);
 
   return (

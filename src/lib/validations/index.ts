@@ -186,6 +186,8 @@ export const adminProductSchema = z
     isFeatured: z.coerce.boolean().default(false),
     isNew: z.coerce.boolean().default(false),
     isBestSeller: z.coerce.boolean().default(false),
+    isPremium: z.coerce.boolean().default(false),
+    isLimitedEdition: z.coerce.boolean().default(false),
     isPublished: z.coerce.boolean().default(true),
     needsReview: z.coerce.boolean().default(false),
     metaTitle: z.string().trim().max(180).optional().or(z.literal("")),
@@ -244,6 +246,8 @@ export const adminCategorySchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers and hyphens only"),
   description: z.string().trim().max(2000).optional().or(z.literal("")),
   image: z.string().trim().optional().or(z.literal("")),
+  /// Empty means a top-level group; otherwise the group this heading sits under.
+  parentId: z.string().trim().optional().or(z.literal("")),
   isActive: z.coerce.boolean().default(true),
   sortOrder: z.coerce.number().int().min(0).max(999).default(0),
 });

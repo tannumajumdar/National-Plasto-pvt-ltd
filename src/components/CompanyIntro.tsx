@@ -5,6 +5,8 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 
+import { INTRO_ATTRIBUTE, INTRO_STORAGE_KEY } from "@/lib/intro";
+
 /**
  * ============================================================================
  * NATIONAL PLASTO PVT. LTD. — PREMIUM CINEMATIC INTRO ANIMATION
@@ -34,6 +36,15 @@ interface CompanyIntroProps {
   onComplete?: () => void;
 }
 
+/**
+ * Hydrating the homepage and animating the intro both want the main thread,
+ * and hydration wins — the logos fly in while React is still mounting the
+ * page underneath, which is what made the first second stutter. The backdrop
+ * is already on screen by then (painted by the script in <head>), so holding
+ * the motion back a beat costs nothing visually and buys a clean run.
+ */
+const SETTLE_MS = 260;
+
 export function CompanyIntro({ forcePlay = false, onComplete }: CompanyIntroProps) {
   // Intro stages:
   // 0: Loading / checking session
@@ -43,56 +54,58 @@ export function CompanyIntro({ forcePlay = false, onComplete }: CompanyIntroProp
   const [stage, setStage] = React.useState<0 | 1 | 2 | 3>(0);
   const [isVisible, setIsVisible] = React.useState(true);
 
-  const finishIntro = React.useCallback(() => {
-    sessionStorage.setItem("nppl_intro_seen_v1", "true");
-    document.body.style.overflow = "";
-    setIsVisible(false);
+  /**
+   * Starts the outro. Stage 3 empties the overlay, which lets AnimatePresence
+   * fade it out and unmount it — so this is also what the Skip button calls,
+   * and skipping gets the same soft landing as letting it run.
+   */
+  const closeIntro = React.useCallback(() => {
+    try {
+      sessionStorage.setItem(INTRO_STORAGE_KEY, "true");
+    } catch {
+      // Private mode throws on write. The intro simply plays again next load.
+    }
+    // Dropped as the fade begins, not after it. This navy sheet is the same
+    // colour as the overlay, so leaving it up would have the fade reveal an
+    // identical rectangle and then cut to the page. It also releases the
+    // scroll lock.
+    document.documentElement.removeAttribute(INTRO_ATTRIBUTE);
+    setStage(3);
     onComplete?.();
   }, [onComplete]);
 
-  // Initialize and check session storage & motion preferences
   React.useEffect(() => {
-    // Check if user prefers reduced motion
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
+    const root = document.documentElement;
 
-    // Check session storage
-    const hasSeenIntro = sessionStorage.getItem("nppl_intro_seen_v1");
+    // The script in <head> already decided this, weighing session storage and
+    // prefers-reduced-motion before the first paint. Reading its answer keeps
+    // the two in step — deciding again here could disagree with what is
+    // already on screen.
+    const shouldPlay = forcePlay || root.getAttribute(INTRO_ATTRIBUTE) === "play";
 
-    if ((hasSeenIntro && !forcePlay) || prefersReducedMotion) {
+    if (!shouldPlay) {
+      root.removeAttribute(INTRO_ATTRIBUTE);
       setIsVisible(false);
       onComplete?.();
       return;
     }
 
-    // Lock body scroll while intro is playing
-    document.body.style.overflow = "hidden";
-    setStage(1);
+    root.setAttribute(INTRO_ATTRIBUTE, "play");
 
-    // Timeline Sequence (Slower & Majestic Cinematic Pace):
-    // 0ms – 3200ms: Dual Logos Enter (1.6s) & Settle/Hold (1.6s)
-    // 3200ms – 6800ms: Cinematic Reveal of Factory (3.6s slow zoom) & Company Name
-    // 6800ms – 7600ms: Smooth Fade out overlay to existing homepage
-    const timer1 = setTimeout(() => {
-      setStage(2);
-    }, 3200);
-
-    const timer2 = setTimeout(() => {
-      setStage(3);
-    }, 6800);
-
-    const timer3 = setTimeout(() => {
-      finishIntro();
-    }, 7600);
+    // Timeline, measured from the end of the settle above:
+    //    0ms – 3200ms: dual logos enter (1.6s), then hold
+    // 3200ms – 6800ms: factory reveal, 3.6s slow zoom, name and tagline
+    // 6800ms onwards: closeIntro hands over to the overlay's own 0.8s exit
+    const timers = [
+      setTimeout(() => setStage(1), SETTLE_MS),
+      setTimeout(() => setStage(2), SETTLE_MS + 3200),
+      setTimeout(closeIntro, SETTLE_MS + 6800),
+    ];
 
     return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-      document.body.style.overflow = "";
+      timers.forEach(clearTimeout);
     };
-  }, [forcePlay, finishIntro, onComplete]);
+  }, [forcePlay, closeIntro, onComplete]);
 
   if (!isVisible) return null;
 
@@ -115,7 +128,7 @@ export function CompanyIntro({ forcePlay = false, onComplete }: CompanyIntroProp
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.5 }}
-            onClick={finishIntro}
+            onClick={closeIntro}
             className="fixed top-5 right-5 sm:top-7 sm:right-7 z-[100000] flex items-center gap-2 rounded-full bg-slate-900/80 hover:bg-slate-950 border border-slate-700/60 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-200 shadow-xl backdrop-blur-md transition-all hover:scale-105 hover:border-slate-500 active:scale-95 group"
             aria-label="Skip Intro"
           >
@@ -156,7 +169,8 @@ export function CompanyIntro({ forcePlay = false, onComplete }: CompanyIntroProp
                     ease: [0.16, 1, 0.3, 1], // Smooth custom cubic bezier
                     times: [0, 0.85, 1],
                   }}
-                  className="flex items-center justify-center p-3.5 sm:p-5 rounded-2xl bg-white/95 backdrop-blur-md shadow-2xl border border-white/20"
+                  style={{ willChange: "transform, opacity" }}
+                  className="flex items-center justify-center p-3.5 sm:p-5 rounded-2xl bg-white shadow-2xl border border-white/20"
                 >
                   <div className="relative h-14 sm:h-20 w-44 sm:w-60">
                     <Image
@@ -191,7 +205,8 @@ export function CompanyIntro({ forcePlay = false, onComplete }: CompanyIntroProp
                     ease: [0.16, 1, 0.3, 1],
                     times: [0, 0.85, 1],
                   }}
-                  className="flex items-center justify-center p-3.5 sm:p-5 rounded-2xl bg-white/95 backdrop-blur-md shadow-2xl border border-white/20"
+                  style={{ willChange: "transform, opacity" }}
+                  className="flex items-center justify-center p-3.5 sm:p-5 rounded-2xl bg-white shadow-2xl border border-white/20"
                 >
                   <div className="relative h-14 sm:h-20 w-44 sm:w-60">
                     <Image
@@ -204,19 +219,21 @@ export function CompanyIntro({ forcePlay = false, onComplete }: CompanyIntroProp
                   </div>
                 </motion.div>
 
-                {/* Settle Glow Ring Overlay */}
+                {/* Settle Glow Ring Overlay.
+
+                    Opacity only. Scaling a blur-2xl layer means the browser
+                    re-blurs it every frame, right while both logos are flying
+                    across the viewport — it was the most expensive thing on
+                    screen and the least visible. */}
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{
-                    opacity: [0, 0.6, 0.25],
-                    scale: [0.8, 1.15, 1.05],
-                  }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: [0, 0.6, 0.25] }}
                   transition={{
                     delay: 1.5,
                     duration: 1.4,
                     ease: "easeOut",
                   }}
-                  className="absolute inset-0 -z-10 rounded-3xl bg-gradient-to-r from-[#155eef]/30 via-white/20 to-[#c8102e]/30 blur-2xl pointer-events-none"
+                  className="absolute inset-0 -z-10 scale-105 rounded-3xl bg-gradient-to-r from-[#155eef]/30 via-white/20 to-[#c8102e]/30 blur-2xl pointer-events-none"
                 />
               </motion.div>
             )}
@@ -228,6 +245,45 @@ export function CompanyIntro({ forcePlay = false, onComplete }: CompanyIntroProp
               - Dark cinematic vignette overlay
               - Typography: Company Name + Tagline
               ================================================================ */}
+          {/* ================================================================
+              COMPANY FACTORY PHOTO (revealed at STAGE 2)
+
+              Mounted from the first frame rather than when stage 2 arrives.
+              A 340 KB photograph that only starts downloading at the moment it
+              is meant to appear will still be decoding when the zoom begins —
+              that hitch 3.2 seconds in was the worst of the stutter. Here it
+              loads alongside the logos, sits at opacity 0, and stage 2 only
+              has to fade it up.
+              ================================================================ */}
+          <motion.div
+            initial={false}
+            animate={{ opacity: stage >= 2 ? 1 : 0, scale: stage >= 2 ? 1 : 1.12 }}
+            transition={{
+              // The fade is quick; the zoom is the slow, majestic part.
+              opacity: { duration: 0.9, ease: "easeOut" },
+              scale: { duration: 3.6, ease: [0.25, 1, 0.5, 1] },
+            }}
+            style={{ willChange: "transform, opacity" }}
+            className="absolute inset-x-0 top-0 z-20 w-full aspect-[1024/682] sm:inset-0 sm:aspect-auto sm:h-full"
+          >
+            <Image
+              src={INTRO_ASSETS.companyPhoto}
+              alt="National Plasto Corporate Headquarters & Manufacturing Facility"
+              fill
+              priority
+              sizes="100vw"
+              className="object-contain object-top sm:object-cover sm:object-center"
+            />
+            {/* Dark Vignette Gradient Overlay (desktop: full cinematic dim).
+                Plain alpha rather than mix-blend-multiply: a blend mode over a
+                scaling image forces the compositor to re-blend the whole
+                viewport every frame of the zoom. */}
+            <div className="absolute inset-0 hidden sm:block bg-gradient-to-t from-[#07111F] via-[#07111F]/85 to-[#07111F]/90" />
+            {/* Mobile: keep the photo (and its logo) readable, just blend the
+                bottom edge into the navy backdrop */}
+            <div className="absolute inset-0 sm:hidden bg-gradient-to-b from-[#07111F]/25 via-transparent to-[#07111F]" />
+          </motion.div>
+
           <AnimatePresence>
             {stage === 2 && (
               <motion.div
@@ -235,31 +291,8 @@ export function CompanyIntro({ forcePlay = false, onComplete }: CompanyIntroProp
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0, transition: { duration: 0.8 } }}
-                className="absolute inset-0 z-20 flex items-end sm:items-center justify-center overflow-hidden"
+                className="absolute inset-0 z-30 flex items-end sm:items-center justify-center overflow-hidden"
               >
-                {/* Company Factory Image with Slow Majestic Zoom */}
-                <motion.div
-                  initial={{ scale: 1.12, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 3.6, ease: [0.25, 1, 0.5, 1] }}
-                  className="absolute inset-x-0 top-0 z-0 w-full aspect-[1024/682] sm:inset-0 sm:aspect-auto sm:h-full"
-                >
-                  <Image
-                    src={INTRO_ASSETS.companyPhoto}
-                    alt="National Plasto Corporate Headquarters & Manufacturing Facility"
-                    fill
-                    priority
-                    sizes="100vw"
-                    className="object-contain object-top sm:object-cover sm:object-center"
-                  />
-                  {/* Dark Vignette Gradient Overlay (desktop: full cinematic dim) */}
-                  <div className="absolute inset-0 hidden sm:block bg-gradient-to-t from-[#07111F] via-[#07111F]/70 to-[#07111F]/80 mix-blend-multiply" />
-                  <div className="absolute inset-0 hidden sm:block bg-black/40" />
-                  {/* Mobile: keep the photo (and its logo) readable, just blend the
-                      bottom edge into the navy backdrop */}
-                  <div className="absolute inset-0 sm:hidden bg-gradient-to-b from-[#07111F]/25 via-transparent to-[#07111F]" />
-                </motion.div>
-
                 {/* Company Name & Tagline Overlay Typography */}
                 <div className="relative z-10 w-full max-w-4xl px-6 pb-14 sm:pb-0 text-center flex flex-col items-center">
                   {/* Subtle Top Badge */}

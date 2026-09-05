@@ -17,6 +17,7 @@ const badgeVariants = cva(
         next: "border-next/25 bg-next/12 text-next",
         national: "border-national/30 bg-national/14 text-national-deep dark:text-national",
         sapphire: "border-sapphire/25 bg-sapphire/12 text-sapphire",
+        captain: "border-captain/25 bg-captain/12 text-captain",
       },
     },
     defaultVariants: { variant: "default" },

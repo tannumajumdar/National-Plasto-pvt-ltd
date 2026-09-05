@@ -15,10 +15,11 @@ import { cn } from "@/lib/utils";
 import { EASE } from "@/components/animations/motion-primitives";
 import type { ProductCardDTO } from "@/types";
 
-const BADGE_VARIANT: Record<string, "next" | "national" | "sapphire"> = {
+const BADGE_VARIANT: Record<string, "next" | "national" | "sapphire" | "captain"> = {
   next: "next",
   national: "national",
   sapphire: "sapphire",
+  captain: "captain",
 };
 
 export function ProductCard({
@@ -102,6 +103,12 @@ export function ProductCard({
           <Badge variant={BADGE_VARIANT[product.collection.accent] ?? "national"}>
             {product.collection.name}
           </Badge>
+          {product.isLimitedEdition && <Badge variant="accent">Limited Edition</Badge>}
+          {product.isPremium && !product.isLimitedEdition && (
+            <Badge variant="outline" className="bg-card/85 backdrop-blur-sm">
+              Premium
+            </Badge>
+          )}
           {product.isNew && <Badge variant="accent">New</Badge>}
           {product.isBestSeller && <Badge variant="default">Best Seller</Badge>}
         </div>

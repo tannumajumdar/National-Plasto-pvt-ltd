@@ -44,6 +44,8 @@ interface ProductFormValues {
   isFeatured: boolean;
   isNew: boolean;
   isBestSeller: boolean;
+  isPremium: boolean;
+  isLimitedEdition: boolean;
   isPublished: boolean;
   metaTitle: string;
   metaDescription: string;
@@ -68,6 +70,8 @@ export interface ProductFormInitial {
   isFeatured: boolean;
   isNew: boolean;
   isBestSeller: boolean;
+  isPremium: boolean;
+  isLimitedEdition: boolean;
   isPublished: boolean;
   needsReview: boolean;
   metaTitle: string | null;
@@ -86,7 +90,8 @@ export function ProductForm({
 }: {
   initial?: ProductFormInitial;
   collections: { id: string; name: string }[];
-  categories: { id: string; name: string }[];
+  /** Flat list, but each heading carries its group so the select reads as a tree. */
+  categories: { id: string; name: string; parent: { name: string } | null }[];
 }) {
   const router = useRouter();
   const isEdit = Boolean(initial);
@@ -116,6 +121,8 @@ export function ProductForm({
       isFeatured: initial?.isFeatured ?? false,
       isNew: initial?.isNew ?? false,
       isBestSeller: initial?.isBestSeller ?? false,
+      isPremium: initial?.isPremium ?? false,
+      isLimitedEdition: initial?.isLimitedEdition ?? false,
       isPublished: initial?.isPublished ?? true,
       metaTitle: initial?.metaTitle ?? "",
       metaDescription: initial?.metaDescription ?? "",
@@ -423,7 +430,9 @@ export function ProductForm({
                       <SelectContent>
                         <SelectItem value="none">Uncategorised</SelectItem>
                         {categories.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.parent ? ` › ` : c.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -496,6 +505,18 @@ export function ProductForm({
               <ToggleRow control={control} name="isFeatured" label="Featured" hint="Shown in the featured rail" />
               <ToggleRow control={control} name="isNew" label="New arrival" />
               <ToggleRow control={control} name="isBestSeller" label="Best seller" />
+              <ToggleRow
+                control={control}
+                name="isPremium"
+                label="Premium"
+                hint="Set from the catalogue's PREMIUM / DELUXE / HEAVY GUARANTEE headings"
+              />
+              <ToggleRow
+                control={control}
+                name="isLimitedEdition"
+                label="Limited edition"
+                hint="Leads the Premium rail on the homepage"
+              />
             </CardContent>
           </Card>
 

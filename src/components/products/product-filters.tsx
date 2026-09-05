@@ -13,11 +13,12 @@ import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn, formatINR } from "@/lib/utils";
-import type { CategoryDTO, CollectionDTO } from "@/types";
+import type { CategoryNodeDTO, CollectionDTO } from "@/types";
 
 export interface FilterFacets {
   collections: CollectionDTO[];
-  categories: CategoryDTO[];
+  /** Top-level groups with their sub-categories, as the catalogue is organised. */
+  categories: CategoryNodeDTO[];
   priceBounds: { min: number; max: number };
 }
 
@@ -84,6 +85,8 @@ function useActiveFilterCount(hideCollections: boolean) {
   if (params.get("featured")) n += 1;
   if (params.get("isNew")) n += 1;
   if (params.get("bestSeller")) n += 1;
+  if (params.get("premium")) n += 1;
+  if (params.get("limitedEdition")) n += 1;
   return n;
 }
 
@@ -147,8 +150,10 @@ function FilterPanel({
 
   const clearAll = () =>
     update((sp) => {
-      ["collection", "category", "minPrice", "maxPrice", "inStock", "featured", "isNew", "bestSeller"]
-        .forEach((k) => sp.delete(k));
+      [
+        "collection", "category", "minPrice", "maxPrice", "inStock",
+        "featured", "isNew", "bestSeller", "premium", "limitedEdition",
+      ].forEach((k) => sp.delete(k));
     });
 
   const activeCount = useActiveFilterCount(hideCollections);
@@ -192,15 +197,32 @@ function FilterPanel({
         <>
           <Separator />
           <FilterGroup title="Category">
-            {facets.categories.map((c) => (
-              <CheckRow
-                key={c.slug}
-                id={`cat-${c.slug}`}
-                checked={isChecked("category", c.slug)}
-                onChange={() => toggleMulti("category", c.slug)}
-                label={c.name}
-                count={c.productCount}
-              />
+            {facets.categories.map((group) => (
+              <div key={group.slug} className="space-y-2.5">
+                {/* Checking a group includes everything filed beneath it. */}
+                <CheckRow
+                  id={`cat-${group.slug}`}
+                  checked={isChecked("category", group.slug)}
+                  onChange={() => toggleMulti("category", group.slug)}
+                  label={group.name}
+                  count={group.productCount}
+                  strong
+                />
+                {group.children.length > 0 && (
+                  <div className="ml-6 space-y-2.5 border-l border-border pl-3">
+                    {group.children.map((child) => (
+                      <CheckRow
+                        key={child.slug}
+                        id={`cat-${child.slug}`}
+                        checked={isChecked("category", child.slug)}
+                        onChange={() => toggleMulti("category", child.slug)}
+                        label={child.name}
+                        count={child.productCount}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </FilterGroup>
         </>
@@ -276,6 +298,18 @@ function FilterPanel({
           onChange={() => toggleFlag("bestSeller")}
           label="Best sellers"
         />
+        <CheckRow
+          id="premium"
+          checked={Boolean(params.get("premium"))}
+          onChange={() => toggleFlag("premium")}
+          label="Premium"
+        />
+        <CheckRow
+          id="limited"
+          checked={Boolean(params.get("limitedEdition"))}
+          onChange={() => toggleFlag("limitedEdition")}
+          label="Limited edition"
+        />
       </FilterGroup>
 
       {onApply && (
@@ -304,19 +338,25 @@ function CheckRow({
   onChange,
   label,
   count,
+  strong = false,
 }: {
   id: string;
   checked: boolean;
   onChange: () => void;
   label: string;
   count?: number;
+  /** Top-level groups read as headings, so they carry more weight. */
+  strong?: boolean;
 }) {
   return (
     <div className="flex items-center gap-3">
       <Checkbox id={id} checked={checked} onCheckedChange={onChange} />
       <Label
         htmlFor={id}
-        className="flex flex-1 cursor-pointer items-center justify-between text-sm font-normal"
+        className={cn(
+          "flex flex-1 cursor-pointer items-center justify-between text-sm",
+          strong ? "font-semibold" : "font-normal",
+        )}
       >
         <span>{label}</span>
         {count !== undefined && (

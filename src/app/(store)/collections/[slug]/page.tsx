@@ -9,7 +9,7 @@ import { SortSelect } from "@/components/products/sort-select";
 import { Reveal } from "@/components/animations/motion-primitives";
 import { SITE } from "@/lib/constants";
 import { parseProductFilters, type SearchParamsInput } from "@/lib/filters";
-import { getCategories, getCollectionBySlug, getCollections } from "@/lib/queries/catalogue";
+import { getCategoryTree, getCollectionBySlug, getCollections } from "@/lib/queries/catalogue";
 import { getPriceBounds, getProducts } from "@/lib/queries/products";
 import { cn } from "@/lib/utils";
 
@@ -79,7 +79,7 @@ export default async function CollectionPage({
 
   const [result, categories, priceBounds] = await Promise.all([
     getProducts(filters),
-    getCategories(),
+    getCategoryTree(),
     getPriceBounds(),
   ]);
 

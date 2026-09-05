@@ -52,11 +52,56 @@ export async function saveCategory(
     };
   }
 
+  // The tree is deliberately two levels deep, matching the brand sheets: a
+  // group holds headings, and a heading holds products. Allowing a heading to
+  // become a parent would produce depths the storefront does not render.
+  const parentId = data.parentId || null;
+  if (parentId) {
+    if (parentId === id) {
+      return {
+        ok: false,
+        message: "A category cannot sit inside itself.",
+        fields: { parentId: "Pick a different parent." },
+      };
+    }
+
+    const parent = await prisma.category.findUnique({
+      where: { id: parentId },
+      select: { parentId: true },
+    });
+    if (!parent) {
+      return {
+        ok: false,
+        message: "That parent category no longer exists.",
+        fields: { parentId: "Pick a different parent." },
+      };
+    }
+    if (parent.parentId) {
+      return {
+        ok: false,
+        message: "Categories only nest one level deep.",
+        fields: { parentId: "Pick a top-level category." },
+      };
+    }
+
+    if (id) {
+      const childCount = await prisma.category.count({ where: { parentId: id } });
+      if (childCount > 0) {
+        return {
+          ok: false,
+          message: `This category has ${childCount} sub-categories, so it cannot be nested itself.`,
+          fields: { parentId: "Move its sub-categories out first." },
+        };
+      }
+    }
+  }
+
   const payload = {
     name: data.name,
     slug: data.slug,
     description: data.description || null,
     image: data.image || null,
+    parentId,
     isActive: data.isActive,
     sortOrder: data.sortOrder,
   };

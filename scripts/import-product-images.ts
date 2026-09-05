@@ -5,16 +5,24 @@
  *   npx tsx scripts/import-product-images.ts ./incoming --apply    # write
  *   npx tsx scripts/import-product-images.ts ./incoming --apply --replace
  *
+ * Sub-folders are walked, so a catalogue exported brand-wise works as-is:
+ *
+ *   incoming/NEXT/Baby Chairs/Baby Ultimate.jpg
+ *   incoming/CAPTAIN/Baby Chair/Baby Ultimate.jpg
+ *
  * Files are matched to products by filename, in this order:
  *
- *   NP-NXT-001.jpg          exact SKU
- *   atom-2-ft.jpg           exact slug
- *   Atom - 2 ft.jpg         product name (slugified)
- *   atom-2-ft-2.jpg         slug + a trailing number = second image, and so on
+ *   NP-NXT-001.jpg          exact SKU        <- always unambiguous
+ *   baby-ultimate.jpg       exact slug
+ *   Baby Ultimate.jpg       product name (slugified)
+ *   baby-ultimate-2.jpg     slug + a trailing number = second image, and so on
  *
- * Matching is deliberately strict: a photo attached to the wrong product is
- * worse than no photo at all, so anything ambiguous is reported and skipped
- * rather than guessed at.
+ * 53 of the 230 products share a name with another brand (Old Florence is in
+ * NATIONAL, SAPPHIRE and CAPTAIN). A name alone cannot pick between those, so
+ * a brand folder anywhere in the path — NEXT, NATIONAL, NATIONAL SAPPHIRE,
+ * CAPTAIN, or their slugs — is used to narrow it down. Anything still
+ * ambiguous is REPORTED AND SKIPPED, never guessed: a photo on the wrong
+ * product is worse than no photo at all.
  *
  * Dry run by default — nothing is copied or written until you pass --apply.
  */
@@ -40,6 +48,7 @@ function slugify(input: string): string {
 }
 
 interface Candidate {
+  /** Path as the operator sees it, relative to the source folder. */
   file: string;
   absolute: string;
   bytes: number;
@@ -53,6 +62,21 @@ function parseName(file: string): { key: string; order: number } {
   const m = /^(.*?)[-_\s]+(\d{1,2})$/.exec(base);
   if (m) return { key: m[1], order: Number(m[2]) - 1 };
   return { key: base, order: 0 };
+}
+
+/** Every file under `dir`, recursively, as paths relative to `base`. */
+async function walk(dir: string, base: string): Promise<string[]> {
+  const out: string[] = [];
+  for (const entry of (await readdir(dir)).sort()) {
+    const absolute = path.join(dir, entry);
+    const info = await stat(absolute);
+    if (info.isDirectory()) {
+      out.push(...(await walk(absolute, base)));
+    } else {
+      out.push(path.relative(base, absolute));
+    }
+  }
+  return out;
 }
 
 async function main() {
@@ -70,7 +94,7 @@ async function main() {
   const sourceDir = path.resolve(dir);
   let entries: string[];
   try {
-    entries = await readdir(sourceDir);
+    entries = await walk(sourceDir, sourceDir);
   } catch {
     console.error(`\nCannot read folder: ${sourceDir}\n`);
     process.exit(1);
@@ -85,23 +109,48 @@ async function main() {
       sku: true,
       description: true,
       price: true,
+      collection: { select: { name: true, slug: true } },
       images: { select: { id: true, url: true } },
     },
+  });
+  type Product = (typeof products)[number];
+
+  const collections = await prisma.collection.findMany({
+    select: { name: true, slug: true },
   });
 
   const bySku = new Map(products.map((p) => [p.sku.toLowerCase(), p]));
   const bySlug = new Map(products.map((p) => [p.slug.toLowerCase(), p]));
-  const byName = new Map(products.map((p) => [slugify(p.name), p]));
+
+  // A list, not a single product: names repeat across brands and the caller
+  // has to be told when a filename cannot identify one product on its own.
+  const byName = new Map<string, Product[]>();
+  for (const p of products) {
+    const key = slugify(p.name);
+    byName.set(key, [...(byName.get(key) ?? []), p]);
+  }
+
+  // Both "NATIONAL SAPPHIRE" and "national-sapphire" name the same brand.
+  const brandFolders = new Map<string, string>();
+  for (const c of collections) {
+    brandFolders.set(slugify(c.name), c.slug);
+    brandFolders.set(slugify(c.slug), c.slug);
+  }
 
   /* ---------------- classify every file ---------------- */
   const matched = new Map<string, Candidate[]>(); // productId -> files
   const unmatched: string[] = [];
+  const ambiguous: { file: string; candidates: Product[] }[] = [];
+  const misfiled: { file: string; brandHint: string; candidates: Product[] }[] = [];
   const rejected: { file: string; why: string }[] = [];
 
-  for (const file of entries.sort()) {
+  for (const file of entries) {
     const absolute = path.join(sourceDir, file);
     const info = await stat(absolute);
-    if (info.isDirectory()) continue;
+
+    // A leading underscore marks a working file the tooling wrote itself
+    // (fetch-drive-images leaves its manifest here); not something to report.
+    if (path.basename(file).startsWith("_")) continue;
 
     const ext = path.extname(file).toLowerCase();
     if (!ALLOWED.has(ext)) {
@@ -117,10 +166,48 @@ async function main() {
       continue;
     }
 
+    // Any folder on the way to this file that names a brand.
+    const brandHint = path
+      .dirname(file)
+      .split(path.sep)
+      .map((segment) => brandFolders.get(slugify(segment)))
+      .find(Boolean);
+
     const { key, order } = parseName(file);
     const norm = key.toLowerCase();
-    const product =
-      bySku.get(norm) ?? bySlug.get(slugify(key)) ?? byName.get(slugify(key)) ?? null;
+    const keySlug = slugify(key);
+
+    let product = bySku.get(norm) ?? null;
+
+    if (!product) {
+      // Everything the filename could possibly mean. A shared name contributes
+      // one candidate per brand; a slug contributes exactly one. Both go in the
+      // pool BEFORE the brand folder narrows it, because a slug match that
+      // ignored the folder is precisely how a CAPTAIN photo lands on a NEXT
+      // product — "baby-ultimate" is NEXT's slug and also CAPTAIN's name.
+      const pool = new Map<string, Product>();
+      for (const p of byName.get(keySlug) ?? []) pool.set(p.id, p);
+      const slugHit = bySlug.get(keySlug);
+      if (slugHit) pool.set(slugHit.id, slugHit);
+
+      const all = [...pool.values()];
+      const candidates = brandHint
+        ? all.filter((p) => p.collection.slug === brandHint)
+        : all;
+
+      if (candidates.length === 1) {
+        product = candidates[0];
+      } else if (candidates.length > 1) {
+        // No tie-break here on purpose. `old-florence.jpg` names three
+        // products; that one of them holds the unsuffixed slug is an artefact
+        // of seeding order, not a statement of intent.
+        ambiguous.push({ file, candidates });
+        continue;
+      } else if (all.length > 0) {
+        misfiled.push({ file, brandHint: brandHint!, candidates: all });
+        continue;
+      }
+    }
 
     if (!product) {
       unmatched.push(file);
@@ -137,6 +224,7 @@ async function main() {
   const willSkip: string[] = [];
 
   console.log(`\nSource : ${sourceDir}`);
+  console.log(`Files  : ${entries.length}`);
   console.log(`Mode   : ${apply ? (replace ? "APPLY (replacing existing images)" : "APPLY") : "DRY RUN — nothing will be written"}`);
   console.log("-".repeat(70));
 
@@ -152,6 +240,30 @@ async function main() {
     console.log(
       `  OK    ${p.sku.padEnd(12)} ${p.name}  <- ${ordered.map((f) => f.file).join(", ")}`,
     );
+  }
+
+  if (ambiguous.length) {
+    console.log(`\n  ${ambiguous.length} file(s) matched MORE THAN ONE product and were skipped:`);
+    for (const a of ambiguous.slice(0, 25)) {
+      console.log(
+        `    ! ${a.file} — could be ${a.candidates
+          .map((p) => `${p.sku} (${p.collection.name})`)
+          .join(" or ")}`,
+      );
+    }
+    if (ambiguous.length > 25) console.log(`    …and ${ambiguous.length - 25} more`);
+    console.log("    Put the file in a brand folder, or rename it to the SKU.");
+  }
+
+  if (misfiled.length) {
+    console.log(`\n  ${misfiled.length} file(s) sit in the wrong brand folder and were skipped:`);
+    for (const m of misfiled.slice(0, 25)) {
+      const who = m.candidates
+        .map((p) => `${p.sku} (${p.collection.name})`)
+        .join(" or ");
+      console.log(`    ! ${m.file} — names ${who}, not a ${m.brandHint.toUpperCase()} product`);
+    }
+    if (misfiled.length > 25) console.log(`    …and ${misfiled.length - 25} more`);
   }
 
   if (unmatched.length) {
@@ -193,7 +305,7 @@ async function main() {
     const ordered = files.sort((a, b) => a.order - b.order);
     const urls: string[] = [];
 
-    for (const [i, f] of ordered.entries()) {
+    for (const f of ordered) {
       const ext = path.extname(f.file).toLowerCase().replace(".jpeg", ".jpg");
       // Content hash in the name: re-importing the same photo cannot collide,
       // and a changed photo gets a new URL so caches do not serve the old one.
@@ -205,7 +317,6 @@ async function main() {
       await copyFile(f.absolute, path.join(destDir, filename));
       urls.push(`${publicRoot}/${FOLDER}/${filename}`.replace(/\/+/g, "/"));
       copied++;
-      void i;
     }
 
     await prisma.$transaction(async (tx) => {
