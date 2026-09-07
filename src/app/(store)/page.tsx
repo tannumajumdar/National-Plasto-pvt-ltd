@@ -18,11 +18,15 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-// Five minutes, not an hour. These pages are prerendered, so their data is a
-// snapshot: an admin edit refreshes them at once through revalidatePath, but a
-// change made straight against the database — a seed, a bulk import — bypasses
-// that, and an hour of stale catalogue is too long to wait on.
-export const revalidate = 300;
+// Rendered per request, not prerendered at build.
+//
+// Railway's build container cannot reach the database, and safeRead turns that
+// into an empty result rather than a failed build — so every deploy used to
+// bake an empty catalogue into this page, and it only came right once ISR
+// regenerated it minutes later. Rendering on demand costs one round trip to a
+// database that sits on the same private network at runtime, and the page is
+// never wrong.
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const highlights = await getHighlightProducts(10);
