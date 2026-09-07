@@ -207,17 +207,29 @@ async function main() {
     }
 
     if (urls.length) {
-      await prisma.$transaction(async (tx) => {
-        if (replace) await tx.productImage.deleteMany({ where: { productId: product.id } });
-        await tx.productImage.createMany({
-          data: urls.map((url, i) => ({
-            productId: product.id,
-            url,
-            alt: product.name,
-            sortOrder: i,
-          })),
-        });
-      });
+      const rows = urls.map((url, i) => ({
+        productId: product.id,
+        url,
+        alt: product.name,
+        sortOrder: i,
+      }));
+
+      // Only a replace needs the delete and the insert to be atomic. Adding
+      // rows to a product that has none does not, and over Railway's public
+      // proxy every statement is an internet round trip — long enough that
+      // Prisma's 5-second transaction start timeout fires part-way through a
+      // run of this length.
+      if (replace) {
+        await prisma.$transaction(
+          async (tx) => {
+            await tx.productImage.deleteMany({ where: { productId: product.id } });
+            await tx.productImage.createMany({ data: rows });
+          },
+          { maxWait: 30000, timeout: 60000 },
+        );
+      } else {
+        await prisma.productImage.createMany({ data: rows });
+      }
     }
 
     done++;

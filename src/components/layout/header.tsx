@@ -156,11 +156,14 @@ export function Header({ catalogue = [] }: { catalogue?: CatalogueNavBrand[] }) 
               scrolled ? "h-16 sm:h-18" : "h-20 sm:h-24",
             )}
           >
-            {/* Dual Brand Logos */}
-            <div className="flex shrink-0 items-center gap-3.5 xl:gap-5">
+            {/* Dual Brand Logos.
+                On a phone the two marks stay side by side here, where there is
+                no room for them anywhere else. From sm up the NEXT mark moves
+                to the far end of the bar, past the quote button. */}
+            <div className="flex shrink-0 items-center gap-3 sm:gap-3.5 xl:gap-5">
               <Logo compact={false} priority className="h-10 sm:h-13 xl:h-15" />
-              <div className="hidden h-8 sm:h-10 w-px bg-slate-200 dark:bg-slate-800 sm:block shrink-0" />
-              <NextBrandLogo className="hidden sm:inline-flex h-9 sm:h-11 xl:h-13" />
+              <div className="h-8 w-px shrink-0 bg-slate-200 dark:bg-slate-800 sm:hidden" />
+              <NextBrandLogo className="h-9 sm:hidden" />
             </div>
 
             {/* Desktop Navigation Links */}
@@ -312,6 +315,13 @@ export function Header({ catalogue = [] }: { catalogue?: CatalogueNavBrand[] }) 
                   <ArrowRight className="size-3.5 sm:size-4 shrink-0" />
                 </Link>
               </Button>
+
+              {/* The NEXT mark closes the bar from sm up; below that it sits
+                  beside the NPPL mark on the left instead. */}
+              <div className="ml-2 hidden shrink-0 items-center gap-3 sm:flex xl:ml-3 xl:gap-4">
+                <div className="h-8 w-px shrink-0 bg-slate-200 dark:bg-slate-800 sm:h-10" />
+                <NextBrandLogo className="h-9 sm:h-11 xl:h-13" />
+              </div>
 
               {/* Mobile hamburger */}
               <button

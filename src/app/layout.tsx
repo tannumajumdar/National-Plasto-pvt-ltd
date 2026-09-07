@@ -81,9 +81,10 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   // A single unconditional tag, not a prefers-color-scheme pair: the site
-  // defaults to dark regardless of the OS setting, and applyTheme() rewrites
-  // this same tag when a visitor picks light.
-  themeColor: "#0a1420",
+  // defaults to light regardless of the OS setting, and applyTheme() rewrites
+  // this same tag when a visitor picks dark. Keep it in step with the light
+  // colour there, or a phone paints its address bar the wrong shade.
+  themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
 };

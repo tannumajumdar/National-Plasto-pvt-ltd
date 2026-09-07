@@ -33,7 +33,10 @@ const ThemeContext = React.createContext<ThemeContextValue | null>(null);
  */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = React.useState<Theme>(DEFAULT_THEME);
-  const [resolvedTheme, setResolvedTheme] = React.useState<ResolvedTheme>("dark");
+  // Must agree with DEFAULT_THEME: this is what every component sees until the
+  // effect below reads the stored preference, and a mismatch shows up as the
+  // theme icon flipping a beat after the page paints.
+  const [resolvedTheme, setResolvedTheme] = React.useState<ResolvedTheme>("light");
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {

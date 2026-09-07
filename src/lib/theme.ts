@@ -11,11 +11,12 @@ export const THEMES = ["light", "dark", "system"] as const;
 export type Theme = (typeof THEMES)[number];
 
 /**
- * What a visitor gets before they have expressed any preference. The site is
- * designed dark-first, so an unset preference paints dark rather than
- * following the OS; "System" is still one click away in the theme menu.
+ * What a visitor gets before they have expressed any preference. The catalogue
+ * is photographed on white, so the light theme is the one the products were
+ * shot for; an unset preference paints light rather than following the OS.
+ * "System" and "Dark" are both one click away in the theme menu.
  */
-export const DEFAULT_THEME: Theme = "dark";
+export const DEFAULT_THEME: Theme = "light";
 
 /** The two themes that can actually be painted. "system" resolves to one. */
 export type ResolvedTheme = "light" | "dark";
@@ -34,7 +35,7 @@ export function isTheme(value: unknown): value is Theme {
  *
  * Kept deliberately tiny and defensive; a browser with localStorage disabled
  * (Safari private mode throws on access) must still render, just in the
- * default (dark) theme.
+ * default (light) theme.
  */
 export const THEME_INIT_SCRIPT = `
 (function () {
@@ -44,12 +45,12 @@ export const THEME_INIT_SCRIPT = `
     var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     // 'light' / 'dark' are explicit choices; only 'system' follows the OS.
     // Anything else — a missing key, a stale value — falls back to the site
-    // default, which is dark. This has to match ThemeProvider's isTheme()
+    // default, which is light. This has to match ThemeProvider's isTheme()
     // fallback exactly, or a stale value would paint one theme and then flip
     // to the other on hydration.
-    var dark = stored === 'light' ? false
+    var dark = stored === 'dark' ? true
       : stored === 'system' ? prefersDark
-      : true;
+      : false;
     var root = document.documentElement;
     root.classList.toggle('dark', dark);
     root.style.colorScheme = dark ? 'dark' : 'light';
