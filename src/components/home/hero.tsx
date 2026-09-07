@@ -40,19 +40,19 @@ const SLIDES = [
     accentColor: "#155eef",
   },
   {
-    subtitle: "INDUSTRIAL & STORAGE",
+    subtitle: "TABLES",
     title: (
       <>
-        HEAVY DUTY<br />
-        CRATES &amp;<br />
-        PALLETS
+        DINING, TEA<br />
+        &amp; COFFEE<br />
+        TABLES
       </>
     ),
-    tagline: "Built for Endurance",
+    tagline: "Made to Gather Around",
     description:
-      "Impact-resistant material handling solutions engineered for logistics, agriculture, and supply chain efficiency.",
-    image: "/images/home/hero-slide-crates-feathered.png",
-    alt: "Industrial Plastic Crates and Storage Bins",
+      "Forty-six table formats across all four brands — from the Maharaja and Jumbo premium dining range to everyday tea and coffee tables.",
+    image: "/images/home/hero-slide-tables-feathered.png",
+    alt: "Maharaja moulded dining table in a wood-grain finish",
     accentColor: "#0b2545",
   },
 ];
