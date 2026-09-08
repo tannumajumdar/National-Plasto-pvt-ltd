@@ -160,10 +160,10 @@ export function Header({ catalogue = [] }: { catalogue?: CatalogueNavBrand[] }) 
                 On a phone the two marks stay side by side here, where there is
                 no room for them anywhere else. From sm up the NEXT mark moves
                 to the far end of the bar, past the quote button. */}
-            <div className="flex shrink-0 items-center gap-3 sm:gap-3.5 xl:gap-5">
-              <Logo compact={false} priority className="h-10 sm:h-13 xl:h-15" />
-              <div className="h-8 w-px shrink-0 bg-slate-200 dark:bg-slate-800 sm:hidden" />
-              <NextBrandLogo className="h-9 sm:hidden" />
+            <div className="flex shrink-0 items-center gap-2.5 sm:gap-3.5 xl:gap-5">
+              <Logo compact={false} priority className="h-8 sm:h-13 xl:h-15" />
+              <div className="h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-800 sm:hidden" />
+              <NextBrandLogo className="h-6 sm:hidden" />
             </div>
 
             {/* Desktop Navigation Links */}
@@ -220,10 +220,14 @@ export function Header({ catalogue = [] }: { catalogue?: CatalogueNavBrand[] }) 
             </nav>
 
             {/* Header Right Actions */}
-            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 ml-auto mr-2 sm:mr-4 xl:mr-6">
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 ml-auto mr-0 sm:mr-4 xl:mr-6">
+              {/* Search and Cart are hidden on a phone, where the bottom tab bar
+                  already carries both — the same overlay and the same drawer. The
+                  header has room for the quote button or for duplicates of them,
+                  not for both. */}
               <button
                 onClick={() => setSearchOpen(true)}
-                className={cn(iconButton, "size-8.5 sm:size-9")}
+                className={cn(iconButton, "hidden sm:grid size-8.5 sm:size-9")}
                 aria-label="Search products"
               >
                 <Search className="size-4 sm:size-4.5" />
@@ -243,7 +247,7 @@ export function Header({ catalogue = [] }: { catalogue?: CatalogueNavBrand[] }) 
               <button
                 type="button"
                 onClick={() => openCart(true)}
-                className={cn(iconButton, "size-8.5 sm:size-9")}
+                className={cn(iconButton, "hidden sm:grid size-8.5 sm:size-9")}
                 aria-label={`Open cart${mounted && cartCount ? `, ${cartCount} items` : ""}`}
               >
                 <ShoppingBag className="size-4 sm:size-4.5" />
@@ -308,11 +312,12 @@ export function Header({ catalogue = [] }: { catalogue?: CatalogueNavBrand[] }) 
               {/* Get a Quote Red Button */}
               <Button
                 asChild
-                className="ml-1 sm:ml-1.5 bg-[#c8102e] hover:bg-[#a80b24] text-white font-extrabold text-[10px] sm:text-[11px] xl:text-xs uppercase tracking-wide px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-sm shrink-0 whitespace-nowrap"
+                className="ml-0.5 sm:ml-1.5 bg-[#c8102e] hover:bg-[#a80b24] text-white font-extrabold text-[10px] sm:text-[11px] xl:text-xs uppercase tracking-wide px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-sm shrink-0 whitespace-nowrap"
               >
                 <Link href="/contact" className="whitespace-nowrap inline-flex items-center gap-1.5">
                   <span>GET A QUOTE</span>
-                  <ArrowRight className="size-3.5 sm:size-4 shrink-0" />
+                  {/* The arrow is the first thing to go when the bar is tight. */}
+                  <ArrowRight className="hidden sm:block size-3.5 sm:size-4 shrink-0" />
                 </Link>
               </Button>
 

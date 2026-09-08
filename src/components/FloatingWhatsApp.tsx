@@ -35,7 +35,11 @@ export function FloatingWhatsApp() {
   )}`;
 
   return (
-    <div className="fixed bottom-5 right-5 sm:bottom-7 sm:right-7 z-50 flex items-center select-none">
+    // Sits above the mobile tab bar, which is fixed to the bottom edge and
+    // stays until lg — roughly 3.75rem of nav plus whatever the phone reserves
+    // for its home indicator, so 4.5rem clears it with a gap. From lg up the
+    // bar is gone and this returns to the corner.
+    <div className="fixed right-5 z-50 flex select-none items-center bottom-[calc(4.5rem+env(safe-area-inset-bottom))] lg:bottom-7 lg:right-7">
       {/* Hover Tooltip (Desktop) */}
       <AnimatePresence>
         {showTooltip && (
