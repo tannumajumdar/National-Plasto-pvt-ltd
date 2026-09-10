@@ -65,6 +65,17 @@ function withPoolSettings(url) {
   }
 }
 
+const MIME = {
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".webp": "image/webp",
+};
+
+function mimeFor(file) {
+  return MIME[path.extname(file).toLowerCase()] ?? "application/octet-stream";
+}
+
 /** NP-NXT-001.jpg -> { sku, order: 0 };  NP-NXT-001-2.jpg -> { sku, order: 1 } */
 function parseName(file) {
   const base = path.basename(file, path.extname(file));
@@ -126,7 +137,14 @@ async function main() {
 
   const todo = [...bySku.entries()]
     .filter(([sku]) => byId.has(sku))
-    .filter(([sku]) => replace || byId.get(sku)._count.images === 0)
+    .filter(([sku, list]) => {
+      const live = byId.get(sku)._count.images;
+      if (live === 0) return true;
+      // A replace is only worth the risk where this machine holds more than is
+      // already published. Re-uploading a product that is already complete
+      // gains nothing and puts its live photographs through a delete.
+      return replace && list.length > live;
+    })
     .slice(0, limit);
 
   const unknown = [...bySku.keys()].filter((sku) => !byId.has(sku));
@@ -174,6 +192,7 @@ async function main() {
   /* ---------------- upload ---------------- */
   let uploaded = 0;
   let failedFiles = 0;
+  let skippedReplace = 0;
   let done = 0;
 
   for (const [sku, list] of todo) {
@@ -184,7 +203,10 @@ async function main() {
       try {
         const body = new FormData();
         const bytes = await readFile(item.absolute);
-        body.append("file", new Blob([bytes], { type: "image/jpeg" }), item.file);
+        // Part of the shoot is PNG. The upload route reads the declared type to
+        // pick an extension and rejects anything it does not recognise, so this
+        // has to follow the file rather than assume JPEG.
+        body.append("file", new Blob([bytes], { type: mimeFor(item.file) }), item.file);
         body.append("folder", "products");
         body.append("slug", sku.toLowerCase());
 
@@ -220,13 +242,24 @@ async function main() {
       // Prisma's 5-second transaction start timeout fires part-way through a
       // run of this length.
       if (replace) {
-        await prisma.$transaction(
-          async (tx) => {
-            await tx.productImage.deleteMany({ where: { productId: product.id } });
-            await tx.productImage.createMany({ data: rows });
-          },
-          { maxWait: 30000, timeout: 60000 },
-        );
+        // Never trade a full gallery for a partial one. If some of this
+        // product's uploads failed, what is already published is the better
+        // set — leave it alone and say so.
+        if (urls.length < product._count.images) {
+          skippedReplace++;
+          console.log(
+            `  ~ ${sku}: ${urls.length} of ${list.length} uploaded, keeping the ` +
+              `${product._count.images} already live`,
+          );
+        } else {
+          await prisma.$transaction(
+            async (tx) => {
+              await tx.productImage.deleteMany({ where: { productId: product.id } });
+              await tx.productImage.createMany({ data: rows });
+            },
+            { maxWait: 30000, timeout: 60000 },
+          );
+        }
       } else {
         await prisma.productImage.createMany({ data: rows });
       }

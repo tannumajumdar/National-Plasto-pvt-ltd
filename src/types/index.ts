@@ -90,6 +90,17 @@ export interface BrandCatalogueDTO {
   groups: CategoryNodeDTO[];
 }
 
+/** One of the five top-level groups, with a real product to represent it. */
+export interface CategoryShowcaseDTO {
+  name: string;
+  slug: string;
+  description: string | null;
+  productCount: number;
+  /** A photograph from a product in this group, or null if none has one yet. */
+  image: string | null;
+  imageAlt: string | null;
+}
+
 /** Compact shape for the header menu: brand plus its top-level groups. */
 export interface CatalogueNavBrand {
   name: string;

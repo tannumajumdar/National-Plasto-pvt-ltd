@@ -180,13 +180,30 @@ function resolve(segments, candidates) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function exists(file) {
-  try {
-    await stat(file);
-    return true;
-  } catch {
-    return false;
+/** The extension for a buffer's magic bytes, or null if it is not an image. */
+function imageKind(buf) {
+  if (buf.length < 1024) return null;
+  if (buf[0] === 0xff && buf[1] === 0xd8) return ".jpg";
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return ".png";
+  if (buf.subarray(0, 4).toString() === "RIFF" && buf.subarray(8, 12).toString() === "WEBP") {
+    return ".webp";
   }
+  return null;
+}
+
+const KINDS = [".jpg", ".png", ".webp"];
+
+/** True when this photograph has already been fetched, whatever its format. */
+async function exists(target) {
+  for (const ext of KINDS) {
+    try {
+      await stat(target.replace(/\.jpg$/, ext));
+      return true;
+    } catch {
+      // try the next extension
+    }
+  }
+  return false;
 }
 
 /**
@@ -232,12 +249,16 @@ async function download(urls, target, attempts = 3) {
         const buf = Buffer.from(await res.arrayBuffer());
         // A rate limit or a permission problem comes back as an HTML page with
         // a 200, so check the bytes rather than trusting the status.
-        if (buf.length < 1024 || buf[0] !== 0xff || buf[1] !== 0xd8) {
-          last = "not a JPEG (rate limited?)";
+        const kind = imageKind(buf);
+        if (!kind) {
+          last = "not an image (rate limited?)";
           continue;
         }
 
-        await writeFile(target, buf);
+        // Part of the shoot is filed as PNG. Checking only for the JPEG magic
+        // rejected those as rate limits, which is what left a run of products
+        // with no photograph at all.
+        await writeFile(target.replace(/\.jpg$/, kind), buf);
         return null;
       } catch (e) {
         last = e.cause?.code ?? e.message;

@@ -62,11 +62,15 @@ export function Footer() {
               PRODUCTS
             </h3>
             <ul className="space-y-2 text-slate-400">
-              <li><Link href="/products?category=furniture" className="hover:text-white transition-colors">Furniture</Link></li>
-              <li><Link href="/products?category=crates" className="hover:text-white transition-colors">Crates & Bins</Link></li>
-              <li><Link href="/products?category=household" className="hover:text-white transition-colors">Household Products</Link></li>
-              <li><Link href="/products?category=industrial" className="hover:text-white transition-colors">Industrial Components</Link></li>
-              <li><Link href="/products?category=pallets" className="hover:text-white transition-colors">Pallets</Link></li>
+              {/* The five groups the catalogue is really organised into. This
+                  column used to list Crates, Household, Industrial and Pallets
+                  — none of which National Plasto makes — so every link landed
+                  on an empty result. */}
+              <li><Link href="/products?category=chairs" className="hover:text-white transition-colors">Chairs</Link></li>
+              <li><Link href="/products?category=tables" className="hover:text-white transition-colors">Tables</Link></li>
+              <li><Link href="/products?category=stools" className="hover:text-white transition-colors">Stools</Link></li>
+              <li><Link href="/products?category=baby-kids" className="hover:text-white transition-colors">Baby &amp; Kids</Link></li>
+              <li><Link href="/products?category=storage" className="hover:text-white transition-colors">Storage</Link></li>
               <li><Link href="/contact" className="hover:text-white transition-colors">Custom Moulding</Link></li>
             </ul>
           </div>

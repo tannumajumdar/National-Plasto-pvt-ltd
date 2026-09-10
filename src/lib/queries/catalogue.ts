@@ -10,6 +10,7 @@ import type {
   CatalogueNavBrand,
   CategoryDTO,
   CategoryNodeDTO,
+  CategoryShowcaseDTO,
   CollectionDTO,
 } from "@/types";
 
@@ -219,6 +220,50 @@ export const getCatalogue = cache(async (): Promise<BrandCatalogueDTO[]> => {
 export const getCategoryTree = cache(async (): Promise<CategoryNodeDTO[]> =>
   buildTree(await getCatalogueIndex()),
 );
+
+/**
+ * The five top-level groups for the homepage, each with a real product to show
+ * for it. The representative shot is the first premium product in the group
+ * that has photography, which keeps the row looking like the catalogue rather
+ * than like stock imagery.
+ */
+export const getCategoryShowcase = cache(async (): Promise<CategoryShowcaseDTO[]> => {
+  const [tree, shot] = await Promise.all([
+    getCategoryTree(),
+    safeRead(
+      () =>
+        prisma.product.findMany({
+          where: { isPublished: true, images: { some: {} } },
+          orderBy: [{ isPremium: "desc" }, { name: "asc" }],
+          select: {
+            name: true,
+            images: { select: { url: true }, orderBy: { sortOrder: "asc" }, take: 1 },
+            category: { select: { slug: true, parent: { select: { slug: true } } } },
+          },
+        }),
+      [],
+    ),
+  ]);
+
+  // First hit per group wins, and the query is already ordered, so this picks
+  // the same product every time rather than shuffling on each request.
+  const sample = new Map<string, { url: string; name: string }>();
+  for (const p of shot) {
+    const group = p.category?.parent?.slug ?? p.category?.slug;
+    const url = p.images[0]?.url;
+    if (!group || !url || sample.has(group)) continue;
+    sample.set(group, { url, name: p.name });
+  }
+
+  return tree.map((group) => ({
+    name: group.name,
+    slug: group.slug,
+    description: group.description,
+    productCount: group.productCount,
+    image: sample.get(group.slug)?.url ?? null,
+    imageAlt: sample.get(group.slug)?.name ?? null,
+  }));
+});
 
 /**
  * A compact version of the tree for the header menu: brand, its top-level

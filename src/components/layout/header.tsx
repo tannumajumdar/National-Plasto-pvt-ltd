@@ -89,13 +89,13 @@ export function Header({ catalogue = [] }: { catalogue?: CatalogueNavBrand[] }) 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-  const overlay = pathname === "/" && !scrolled;
-
+  // Theme tokens, not a fixed colour. The bar used to float transparently over
+  // a dark hero on the homepage, so the icons painted themselves white until
+  // the first scroll; the bar is opaque now — white on white — and the tokens
+  // resolve correctly against it in either theme.
   const iconButton = cn(
     "relative grid size-9 place-items-center rounded-full transition-colors",
-    overlay
-      ? "text-white/75 hover:bg-white/10 hover:text-white"
-      : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+    "text-muted-foreground hover:bg-secondary hover:text-foreground",
   );
 
   return (
@@ -220,7 +220,9 @@ export function Header({ catalogue = [] }: { catalogue?: CatalogueNavBrand[] }) 
             </nav>
 
             {/* Header Right Actions */}
-            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 ml-auto mr-0 sm:mr-4 xl:mr-6">
+            {/* No right margin: container-page already pads both sides equally,
+                so any mr here makes the bar sit off-centre against the logo. */}
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 ml-auto">
               {/* Search and Cart are hidden on a phone, where the bottom tab bar
                   already carries both — the same overlay and the same drawer. The
                   header has room for the quote button or for duplicates of them,
@@ -233,7 +235,7 @@ export function Header({ catalogue = [] }: { catalogue?: CatalogueNavBrand[] }) 
                 <Search className="size-4 sm:size-4.5" />
               </button>
 
-              <ThemeToggle inverted={overlay} />
+              <ThemeToggle />
 
               <Link
                 href="/wishlist"

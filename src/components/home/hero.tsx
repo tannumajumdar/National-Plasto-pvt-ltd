@@ -132,7 +132,9 @@ export function Hero() {
                   {slide.subtitle}
                 </span>
 
-                <h1 className="mt-1.5 text-3xl sm:text-4xl lg:text-[48px] xl:text-[54px] font-black leading-[1.04] tracking-tight text-[#0b2545] dark:text-white uppercase">
+                {/* 1.04 crowded the lines once a slide ran to three long words
+                    — set from the cap height, uppercase needs a little more. */}
+                <h1 className="mt-1.5 text-3xl sm:text-4xl lg:text-[48px] xl:text-[54px] font-black leading-[1.14] tracking-tight text-[#0b2545] dark:text-white uppercase">
                   {slide.title}
                 </h1>
 

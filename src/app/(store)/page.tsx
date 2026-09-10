@@ -10,6 +10,7 @@ import { PremiumHighlights } from "@/components/home/premium-highlights";
 import { StatsBand } from "@/components/home/stats-band";
 import { DistributorSection } from "@/components/DistributorSection";
 import { SITE } from "@/lib/constants";
+import { getCategoryShowcase } from "@/lib/queries/catalogue";
 import { getHighlightProducts } from "@/lib/queries/products";
 
 export const metadata: Metadata = {
@@ -29,7 +30,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const highlights = await getHighlightProducts(10);
+  const [highlights, categories] = await Promise.all([
+    getHighlightProducts(10),
+    getCategoryShowcase(),
+  ]);
 
   return (
     <>
@@ -43,7 +47,7 @@ export default async function HomePage() {
       <AboutTeaser />
 
       {/* Our Products Section */}
-      <CollectionsShowcase />
+      <CollectionsShowcase categories={categories} />
 
       {/* Premium & Limited Edition Rail */}
       <PremiumHighlights products={highlights} />
