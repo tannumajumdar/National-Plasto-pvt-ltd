@@ -4,6 +4,11 @@
 
 generator client {
   provider = "prisma-client-js"
+  // Prisma compiles a query engine for whatever machine runs `generate`, so a
+  // client generated on Windows cannot talk to MySQL from a Linux server —
+  // it fails at boot with "Query engine binary not found". Both Linux targets
+  // are listed because cPanel hosts run either CloudLinux (rhel) or Debian.
+  binaryTargets = ["native", "debian-openssl-3.0.x", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
