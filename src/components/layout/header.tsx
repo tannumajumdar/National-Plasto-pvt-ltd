@@ -358,6 +358,49 @@ export function Header({ catalogue = [] }: { catalogue?: CatalogueNavBrand[] }) 
             </div>
           </div>
         </div>
+
+        {/* Secondary Navigation Bar — Nilkamal-style sub-nav */}
+        <div
+          className={cn(
+            "hidden lg:block w-full border-b transition-all duration-300",
+            scrolled
+              ? "border-slate-200/60 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95"
+              : "border-slate-200/50 bg-[#f9fafb] dark:border-slate-800/60 dark:bg-slate-900/95",
+          )}
+        >
+          <div className="container-page">
+            {/* Fixed height, not padding: the main element below reserves the
+                header's height by hand, and that sum has to be exact or the
+                page starts underneath the bar. */}
+            <nav
+              className="flex h-10 items-center justify-center gap-8 xl:gap-10 2xl:gap-12"
+              aria-label="Secondary"
+            >
+              {/* The corporate strip. It carries only what the main bar above
+                  does not — Contact Us and Our Businesses live there already,
+                  and repeating them made the header read as two half-navs. */}
+              {[
+                { label: "DISCOVER NPPL", href: "/about" },
+                { label: "INVESTORS CIRCLE", href: "/about#investors" },
+                { label: "CAREERS", href: "/careers" },
+                { label: "NEWS", href: "/news" },
+              ].map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "text-[11px] xl:text-xs font-semibold uppercase tracking-[0.08em] transition-colors whitespace-nowrap",
+                    isActive(item.href)
+                      ? "text-[#c8102e] dark:text-[#ff7183]"
+                      : "text-slate-600 hover:text-[#c8102e] dark:text-slate-400 dark:hover:text-[#ff7183]",
+                  )}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </div>
       </header>
 
       <MobileMenu

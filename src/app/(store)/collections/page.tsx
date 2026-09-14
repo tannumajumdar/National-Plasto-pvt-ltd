@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 
+import { BrandsShowcase } from "@/components/home/brands-showcase";
 import { CollectionsShowcase } from "@/components/home/collections-showcase";
 import { PageHeader } from "@/components/layout/page-header";
-import { getCategoryShowcase } from "@/lib/queries/catalogue";
+import { getBrandShowcase, getCategoryShowcase } from "@/lib/queries/catalogue";
 
 export const metadata: Metadata = {
-  title: "Collections",
+  title: "Our Businesses",
   description:
-    "Explore the four National Plasto brands — NEXT, NATIONAL, NATIONAL SAPPHIRE and CAPTAIN — each with its own character, all built to the same quality standard.",
+    "The four National Plasto brands — NEXT, NATIONAL, NATIONAL SAPPHIRE and CAPTAIN — each with its own range and price position, all built to the same manufacturing standard.",
   alternates: { canonical: "/collections" },
 };
 
@@ -21,18 +22,24 @@ export const metadata: Metadata = {
 // never wrong.
 export const dynamic = "force-dynamic";
 
-export default async function CollectionsPage() {
-  const categories = await getCategoryShowcase();
+export default async function BusinessesPage() {
+  const [brands, categories] = await Promise.all([
+    getBrandShowcase(),
+    getCategoryShowcase(),
+  ]);
 
   return (
     <>
       <PageHeader
-        eyebrow="Our range"
-        title="Collections"
-        description="Every National Plasto product belongs to one of four brands — NEXT, NATIONAL, NATIONAL SAPPHIRE and CAPTAIN. Each has its own design language and price position, and every one is held to the same manufacturing standard."
-        crumbs={[{ label: "Collections" }]}
+        eyebrow="Our businesses"
+        title="Four brands, one factory"
+        description="Every National Plasto product belongs to one of four brands. Each has its own design language and price position — and every one is held to the same manufacturing standard."
+        crumbs={[{ label: "Our Businesses" }]}
       />
 
+      <BrandsShowcase brands={brands} />
+
+      {/* What the four brands make between them, by type rather than by brand. */}
       <CollectionsShowcase categories={categories} />
     </>
   );

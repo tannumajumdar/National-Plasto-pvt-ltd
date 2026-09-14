@@ -101,6 +101,21 @@ export interface CategoryShowcaseDTO {
   imageAlt: string | null;
 }
 
+/** One brand on the Our Businesses page. */
+export interface BrandShowcaseDTO {
+  name: string;
+  slug: string;
+  tagline: string | null;
+  description: string | null;
+  accent: AccentToken;
+  productCount: number;
+  categoryCount: number;
+  /** Names of the top-level groups this brand makes, e.g. Chairs, Tables. */
+  groups: string[];
+  image: string | null;
+  imageAlt: string | null;
+}
+
 /** Compact shape for the header menu: brand plus its top-level groups. */
 export interface CatalogueNavBrand {
   name: string;
@@ -262,4 +277,32 @@ export interface StatDTO {
   icon: string | null;
   computed: string | null;
   isPublished: boolean;
+}
+
+/* ---------------- Careers & news ---------------- */
+
+export interface JobOpeningDTO {
+  id: string;
+  title: string;
+  slug: string;
+  location: string;
+  /** "Full time", "Contract", "Apprenticeship". */
+  employment: string;
+  department: string | null;
+  summary: string;
+  description: string | null;
+  postedAt: string;
+}
+
+export interface NewsPostDTO {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  /** Null in list views, which do not fetch the body. */
+  body: string | null;
+  image: string | null;
+  publishedAt: string;
+  metaTitle: string | null;
+  metaDescription: string | null;
 }

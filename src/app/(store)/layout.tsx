@@ -31,7 +31,22 @@ export default async function StoreLayout({ children }: { children: React.ReactN
           homepage hero cancels it with -mt-20 so it can paint behind the bar;
           every other page simply starts underneath it.
         */}
-        <main id="main-content" tabIndex={-1} className="flex-1 pt-20 sm:pt-28">
+        {/*
+          The header is fixed, so this reserves its unscrolled height by hand.
+          The sum differs per breakpoint because parts of the bar appear at
+          different ones, and it has to be exact or the page starts underneath:
+
+            below sm   main bar 5rem                                  = 5rem
+            sm         info bar 2rem + main bar 6rem                  = 8rem
+            lg         + the corporate strip 2.5rem                   = 10.5rem
+
+          Change a bar's height and this has to move with it.
+        */}
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="flex-1 pt-20 sm:pt-32 lg:pt-[10.5rem]"
+        >
           <PageTransition>{children}</PageTransition>
         </main>
         <CartDrawer />

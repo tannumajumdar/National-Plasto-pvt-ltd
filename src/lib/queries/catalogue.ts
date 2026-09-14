@@ -7,6 +7,7 @@ import { safeRead } from "@/lib/db/safe";
 import type { AccentToken } from "@/lib/placeholder";
 import type {
   BrandCatalogueDTO,
+  BrandShowcaseDTO,
   CatalogueNavBrand,
   CategoryDTO,
   CategoryNodeDTO,
@@ -262,6 +263,55 @@ export const getCategoryShowcase = cache(async (): Promise<CategoryShowcaseDTO[]
     productCount: group.productCount,
     image: sample.get(group.slug)?.url ?? null,
     imageAlt: sample.get(group.slug)?.name ?? null,
+  }));
+});
+
+/**
+ * The four brands for the Our Businesses page, each with a product of its own
+ * to show for it and the groups it actually makes.
+ *
+ * The representative shot is the first premium product in the brand that has
+ * photography, so the page shows the range rather than stock imagery.
+ */
+export const getBrandShowcase = cache(async (): Promise<BrandShowcaseDTO[]> => {
+  const [catalogue, shot] = await Promise.all([
+    getCatalogue(),
+    safeRead(
+      () =>
+        prisma.product.findMany({
+          where: { isPublished: true, images: { some: {} } },
+          orderBy: [{ isPremium: "desc" }, { name: "asc" }],
+          select: {
+            name: true,
+            images: { select: { url: true }, orderBy: { sortOrder: "asc" }, take: 1 },
+            collection: { select: { slug: true } },
+          },
+        }),
+      [],
+    ),
+  ]);
+
+  const sample = new Map<string, { url: string; name: string }>();
+  for (const p of shot) {
+    const url = p.images[0]?.url;
+    if (!url || sample.has(p.collection.slug)) continue;
+    sample.set(p.collection.slug, { url, name: p.name });
+  }
+
+  return catalogue.map(({ brand, groups }) => ({
+    name: brand.name,
+    slug: brand.slug,
+    tagline: brand.tagline,
+    description: brand.description,
+    accent: brand.accent,
+    productCount: brand.productCount,
+    categoryCount: groups.reduce(
+      (n, g) => n + Math.max(g.children.length, g.directCount > 0 ? 1 : 0),
+      0,
+    ),
+    groups: groups.map((g) => g.name),
+    image: sample.get(brand.slug)?.url ?? null,
+    imageAlt: sample.get(brand.slug)?.name ?? null,
   }));
 });
 

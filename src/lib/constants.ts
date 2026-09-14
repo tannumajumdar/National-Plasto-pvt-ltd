@@ -141,6 +141,7 @@ export function themeForAccent(accent: string): CollectionTheme {
 export const MAIN_NAV = [
   { label: "HOME", href: "/" },
   { label: "ABOUT US", href: "/about" },
+  { label: "OUR BUSINESSES", href: "/collections" },
   { label: "PRODUCTS", href: "/products" },
   { label: "INDUSTRIES", href: "/#industries" },
   { label: "QUALITY", href: "/about#quality" },

@@ -1,5 +1,5 @@
-// National Plasto Pvt. Ltd. â data model
-// Money is stored as INTEGER PAISE (â¹1 = 100) so totals are always exact
+// National Plasto Pvt. Ltd. — data model
+// Money is stored as INTEGER PAISE (₹1 = 100) so totals are always exact
 // and serialise cleanly across the server/client boundary.
 
 generator client {
@@ -463,4 +463,83 @@ model ContactMessage {
 
   @@index([isRead])
   @@map("contact_messages")
+}
+
+// ------------------------------------------------------------------
+// Careers & news
+// ------------------------------------------------------------------
+
+/// One open role. Nothing is published until an admin says so, so a draft can
+/// be written over several sittings without appearing on the site.
+model JobOpening {
+  id          String  @id @default(cuid())
+  title       String
+  slug        String  @unique
+  /// "Kolkata, West Bengal" — free text, since sites vary.
+  location    String
+  /// "Full time", "Contract", "Apprenticeship".
+  employment  String  @default("Full time")
+  department  String?
+  summary     String  @db.Text
+  description String? @db.Text
+  isPublished Boolean @default(false)
+  sortOrder   Int     @default(0)
+
+  applications JobApplication[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isPublished])
+  @@index([sortOrder])
+  @@map("job_openings")
+}
+
+/// An application against a role. The role is optional so a speculative
+/// application survives the opening being taken down.
+model JobApplication {
+  id       String      @id @default(cuid())
+  openingId String?
+  opening  JobOpening? @relation(fields: [openingId], references: [id], onDelete: SetNull)
+
+  /// Snapshot, so the inbox still reads correctly once a role is removed.
+  roleTitle String
+
+  name    String
+  email   String
+  phone   String
+  message String? @db.Text
+  /// Public URL of the uploaded CV, or null when none was attached.
+  cvUrl   String? @db.Text
+
+  isRead Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([openingId])
+  @@index([isRead])
+  @@map("job_applications")
+}
+
+/// A company update — an exhibition, a launch, a milestone.
+model NewsPost {
+  id      String  @id @default(cuid())
+  title   String
+  slug    String  @unique
+  excerpt String  @db.Text
+  body    String  @db.Text
+  image   String? @db.Text
+
+  isPublished Boolean   @default(false)
+  /// Set when an admin first publishes; drives the public ordering.
+  publishedAt DateTime?
+
+  metaTitle       String?
+  metaDescription String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isPublished, publishedAt])
+  @@map("news_posts")
 }
