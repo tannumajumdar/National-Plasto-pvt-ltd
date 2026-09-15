@@ -357,6 +357,64 @@ export async function getHighlightProducts(take = 8): Promise<ProductCardDTO[]> 
   return picked;
 }
 
+export interface BrandRail {
+  name: string;
+  slug: string;
+  accent: AccentToken;
+  productCount: number;
+  products: ProductCardDTO[];
+}
+
+/**
+ * One self-scrolling shelf per brand for the homepage.
+ *
+ * Products that have photography lead, because a rail of placeholder graphics
+ * is not worth animating. Within that, premium first — the same ordering the
+ * brand sheets imply. Each rail is capped: a marquee wants enough cards to
+ * fill the loop, not all 103 of NATIONAL's.
+ */
+export async function getBrandRails(perBrand = 14): Promise<BrandRail[]> {
+  return safeRead(async () => {
+    const brands = await prisma.collection.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: "asc" },
+      select: {
+        name: true,
+        slug: true,
+        accent: true,
+        _count: { select: { products: { where: { isPublished: true } } } },
+      },
+    });
+
+    const rails = await Promise.all(
+      brands.map(async (brand) => {
+        const rows = await prisma.product.findMany({
+          where: { isPublished: true, collection: { slug: brand.slug } },
+          select: cardSelect,
+          orderBy: [
+            // A card with a photograph is the point of the rail.
+            { images: { _count: "desc" } },
+            { isPremium: "desc" },
+            { name: "asc" },
+          ],
+          take: perBrand,
+        });
+
+        return {
+          name: brand.name,
+          slug: brand.slug,
+          accent: brand.accent as AccentToken,
+          productCount: brand._count.products,
+          products: rows.map(mapProductCard),
+        };
+      }),
+    );
+
+    // A brand with too few cards cannot fill a loop without visibly repeating.
+    return rails.filter((r) => r.products.length >= 4);
+  }, []);
+}
+
 /**
  * Fallback for a freshly seeded catalogue: before an admin has flagged
  * anything as Featured/New/Best Seller, show a stable sample so the

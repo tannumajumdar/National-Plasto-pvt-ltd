@@ -438,6 +438,10 @@
   }
   .marquee-slow .marquee-track { animation-duration: 60s; }
   .marquee-fast .marquee-track { animation-duration: 24s; }
+  /* Alternate rails run the other way, so a stack of them reads as movement
+     rather than as one long conveyor. The track is duplicated either way, so
+     reversing is seamless. */
+  .marquee-reverse .marquee-track { animation-direction: reverse; }
   .marquee:hover .marquee-track { animation-play-state: paused; }
   /* Set while the reader is dragging or has just scrolled. Hover covers the
      mouse; touch has no hover, so the component sets this instead. */

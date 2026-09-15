@@ -7,11 +7,12 @@ import { FeatureBar } from "@/components/home/feature-bar";
 import { Hero } from "@/components/home/hero";
 import { IndustriesServe } from "@/components/home/industries-serve";
 import { PremiumHighlights } from "@/components/home/premium-highlights";
+import { ProductMarquee } from "@/components/home/product-marquee";
 import { StatsBand } from "@/components/home/stats-band";
 import { DistributorSection } from "@/components/DistributorSection";
-import { SITE } from "@/lib/constants";
+import { SITE, themeForAccent } from "@/lib/constants";
 import { getCategoryShowcase } from "@/lib/queries/catalogue";
-import { getHighlightProducts } from "@/lib/queries/products";
+import { getBrandRails, getHighlightProducts } from "@/lib/queries/products";
 
 export const metadata: Metadata = {
   title: `${SITE.name} — ${SITE.tagline}`,
@@ -30,9 +31,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [highlights, categories] = await Promise.all([
+  const [highlights, categories, rails] = await Promise.all([
     getHighlightProducts(10),
     getCategoryShowcase(),
+    getBrandRails(14),
   ]);
 
   return (
@@ -54,6 +56,23 @@ export default async function HomePage() {
 
       {/* Impact Stats Banner */}
       <StatsBand />
+
+      {/* One self-scrolling shelf per brand, alternating direction so the
+          stack reads as movement rather than one long conveyor. Every brand
+          in the catalogue gets one, so the whole range is on the homepage. */}
+      {rails.map((rail, i) => (
+        <ProductMarquee
+          key={rail.slug}
+          eyebrow={rail.name}
+          title={`The ${rail.name} range`}
+          description={`${rail.productCount} products — moulded, finished and packed in Kolkata.`}
+          products={rail.products}
+          viewAllHref={`/products?collection=${rail.slug}`}
+          reverse={i % 2 === 1}
+          titleClassName={themeForAccent(rail.accent).text}
+          className={i % 2 === 1 ? "bg-slate-50 dark:bg-slate-900/60" : undefined}
+        />
+      ))}
 
       {/* Industries We Serve Section */}
       <IndustriesServe />
